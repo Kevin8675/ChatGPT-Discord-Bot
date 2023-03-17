@@ -96,7 +96,7 @@ client.on('messageCreate', async msg => {
 	p = getPersonality(msg.content.toUpperCase());
 	if (p == null) return;
 
-		// Check if bot disabled/enabled
+	// Check if bot disabled/enabled
 	if (client.isPaused === true) {
 		if (!isAdmin(msg.author.id)) {
 			msg.channel.send(process.env.DISABLED_MSG);
