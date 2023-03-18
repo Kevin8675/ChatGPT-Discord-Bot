@@ -50,6 +50,21 @@ function getPersonality(message) {
 	return personality;
 }
 
+// Split message function
+function splitMessage(resp, charLim) {
+	const responseNum = Math.ceil(resp.length / charLim);
+	const responses = new Array(responseNum);
+	for (let i = 0, c = 0, chunkSize = null; i < responseNum; i++, c+=chunkSize) {
+		if (i + 1 >= responseNum) {
+			chunkSize = charLim;
+		} else {
+					chunkSize = resp.substr(c, charLim).lastIndexOf(" ");
+		}
+		responses[i] = resp.substr(c, chunkSize);
+	}
+	return responses;
+}
+
 // Create Pause var
 client.isPaused = false;
 
@@ -108,8 +123,12 @@ client.on('messageCreate', async msg => {
 	p.request.push({"role": "user", "content": `${msg.content}`});
 	// Run API request function
 	const response = await chat(p.request);
+	// Split response if it exceeds the Discord 2000 character limit
+	const responseChunks = splitMessage(response, 2000)
 	// Send API response
-	msg.channel.send(response);
+	for (let i=0; i<responseChunks.length; i++) {
+		msg.channel.send(responseChunks[i]);
+	}
 })
 
 // API request function
