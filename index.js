@@ -28,6 +28,7 @@ let personalities;
 function initPersonalities() {
 	personalities = [];
 	let envKeys = Object.keys(process.env);
+	// For each variable in .env check if starts with personality. and add to personalities array if true
 	envKeys.forEach(element => {
 		if (element.startsWith('personality.')) {
 			name = element.slice(12);
@@ -41,12 +42,14 @@ initPersonalities();
 // Get called personality from message
 function getPersonality(message) {
 	let personality = null;
-	for (let i=0; i<personalities.length; i++) {
+	// For each personality, check if the message includes the the name of the personality
+	for (let i = 0; i < personalities.length; i++) {
 		let thisPersonality = personalities[i];
 		if (message.includes(thisPersonality.name.toUpperCase())) {
 			personality = thisPersonality;
 		}
 	}
+	// Return the personality of the message
 	return personality;
 }
 
@@ -54,6 +57,7 @@ function getPersonality(message) {
 function splitMessage(resp, charLim) {
 	const responseNum = Math.ceil(resp.length / charLim);
 	const responses = new Array(responseNum);
+	// For the number of split responses, if its the last response, make the size the character limit, else make the size the last index of a space that is under 2000 characters
 	for (let i = 0, c = 0, chunkSize = null; i < responseNum; i++, c+=chunkSize) {
 		if (i + 1 >= responseNum) {
 			chunkSize = charLim;
@@ -125,8 +129,8 @@ client.on('messageCreate', async msg => {
 	const response = await chat(p.request);
 	// Split response if it exceeds the Discord 2000 character limit
 	const responseChunks = splitMessage(response, 2000)
-	// Send API response
-	for (let i=0; i<responseChunks.length; i++) {
+	// Send the split API response
+	for (let i = 0; i < responseChunks.length; i++) {
 		msg.channel.send(responseChunks[i]);
 	}
 })
