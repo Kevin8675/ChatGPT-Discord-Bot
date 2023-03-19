@@ -32,7 +32,7 @@ function initPersonalities() {
 	envKeys.forEach(element => {
 		if (element.startsWith('personality.')) {
 			name = element.slice(12);
-			personalities.push( { "name": name, "request" : [{"role": "system", "content": `${process.env[element]}`}]})
+			personalities.push({ "name": name, "request" : [{"role": "system", "content": `${process.env[element]}`}]})
 		}
 	});
 }
@@ -101,10 +101,27 @@ client.on('messageCreate', async msg => {
 			msg.channel.send(process.env.COMMAND_PERM_MSG);
 		}
 	}
-	if (msg.content === '!reset') {
-		initPersonalities();
-		msg.channel.send(process.env.RESET_MSG);
-		return;
+	if (msg.content.startsWith('!reset')) {
+		let cutMsg = msg.content.slice(7);
+		// Delete all memories if message is "!reset all"
+		if (cutMsg === 'all') {
+			initPersonalities();
+			msg.channel.send(process.env.RESET_MSG);
+			return;
+		} else {
+			// Check what personality's memory to delete
+			for (let i = 0; i < personalities.length; i++) {
+				let thisPersonality = personalities[i];
+				if (cutMsg.toUpperCase().startsWith(thisPersonality.name.toUpperCase())) {
+					personalities[i] = { "name": thisPersonality.name, "request" : [{"role": "system", "content": `${process.env["personality." + thisPersonality.name]}`}]};
+					msg.channel.send(process.env.DYNAMIC_RESET_MSG.replace('<p>', thisPersonality.name));
+					return;
+				}
+			}
+			// Return error if reset message does not match anything
+			msg.channel.send(process.env.RESET_ERROR_MSG);
+			return;
+		}
 	}
 
 	// Run get personality from message function
