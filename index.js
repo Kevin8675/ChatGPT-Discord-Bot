@@ -102,13 +102,9 @@ client.on('messageCreate', async msg => {
 		}
 	}
 	if (msg.content === '!reset') {
-		if (isAdmin(msg.author.id)) {
-			initPersonalities();
-			msg.channel.send(process.env.RESET_MSG);
-			return;
-		} else {
-			msg.channel.send(process.env.COMMAND_PERM_MSG);
-		}
+		initPersonalities();
+		msg.channel.send(process.env.RESET_MSG);
+		return;
 	}
 
 	// Run get personality from message function
