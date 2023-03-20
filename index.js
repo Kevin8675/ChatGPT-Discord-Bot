@@ -138,6 +138,8 @@ client.on('messageCreate', async msg => {
 
 	// Add user message to request
 	p.request.push({"role": "user", "content": `${msg.content}`});
+	// Start typing indicator
+	msg.channel.sendTyping();
 	// Run API request function
 	const response = await chat(p.request);
 	// Split response if it exceeds the Discord 2000 character limit
