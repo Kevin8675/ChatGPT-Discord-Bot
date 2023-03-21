@@ -84,7 +84,7 @@ client.on('messageCreate', async msg => {
 	// Don't do anything when message is from bot
 	if (msg.author.bot) return;
 
-	// Bot commands
+	// Enable/Disable bot commands
 	if (msg.content === '!disable') {
 		if (isAdmin(msg.author.id)) {
 			client.isPaused = true;
@@ -101,6 +101,14 @@ client.on('messageCreate', async msg => {
 			msg.channel.send(process.env.COMMAND_PERM_MSG);
 		}
 	}
+
+	// Check if bot disabled/enabled
+	if (client.isPaused === true && !isAdmin(msg.author.id)) {
+		msg.channel.send(process.env.DISABLED_MSG);
+		return;
+	}
+
+	// Reset bot command
 	if (msg.content.startsWith('!reset')) {
 		let cutMsg = msg.content.slice(7);
 		// Delete all memories if message is "!reset all"
@@ -127,14 +135,6 @@ client.on('messageCreate', async msg => {
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
 	if (p == null) return;
-
-	// Check if bot disabled/enabled
-	if (client.isPaused === true) {
-		if (!isAdmin(msg.author.id)) {
-			msg.channel.send(process.env.DISABLED_MSG);
-			return;
-		}
-	}
 
 	// Add user message to request
 	p.request.push({"role": "user", "content": `${msg.content}`});
