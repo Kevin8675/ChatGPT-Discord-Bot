@@ -146,7 +146,11 @@ client.on('messageCreate', async msg => {
 	const responseChunks = splitMessage(response, 2000)
 	// Send the split API response
 	for (let i = 0; i < responseChunks.length; i++) {
-		msg.channel.send(responseChunks[i]);
+		if (process.env.REPLY_MODE === 'true' && i === 0) {
+			msg.reply(responseChunks[i]);
+		} else {
+			msg.channel.send(responseChunks[i]);
+		}
 	}
 })
 
