@@ -69,6 +69,15 @@ function splitMessage(resp, charLim) {
 	return responses;
 }
 
+// Send command responses function
+function sendCmdResp(msg, cmdResp) {
+		if (process.env.REPLY_MODE === 'true') {
+			msg.reply(cmdResp);
+		} else {
+			msg.channel.send(cmdResp);
+		}
+}
+
 // Create Pause var
 client.isPaused = false;
 
@@ -88,33 +97,34 @@ client.on('messageCreate', async msg => {
 	if (msg.content === '!disable') {
 		if (isAdmin(msg.author.id)) {
 			client.isPaused = true;
-			msg.channel.send(process.env.DISABLE_MSG);
+			sendCmdResp(msg, process.env.DISABLE_MSG);
 		} else {
-			msg.channel.send(process.env.COMMAND_PERM_MSG);
+			sendCmdResp(msg, process.env.COMMAND_PERM_MSG);
 			return;
 		}
 	}
 	if (msg.content === '!enable') {
 		if (isAdmin(msg.author.id)) {
 			client.isPaused = false;
-			msg.channel.send(process.env.ENABLE_MSG);
+			sendCmdResp(msg, process.env.ENABLE_MSG);
 		} else {
-			msg.channel.send(process.env.COMMAND_PERM_MSG);
+			sendCmdResp(msg, process.env.COMMAND_PERM_MSG);
 			return;
 		}
 	}
 
 	// Reset bot command
 	if (msg.content.startsWith('!reset')) {
+		// Check disabled status
 		if (client.isPaused === true && !isAdmin(msg.author.id)) {
-			msg.channel.send(process.env.DISABLED_MSG);
+			sendCmdResp(msg, process.env.DISABLED_MSG);
 			return;
 		}
 		let cutMsg = msg.content.slice(7);
 		// Delete all memories if message is "!reset all"
 		if (cutMsg === 'all') {
 			initPersonalities();
-			msg.channel.send(process.env.RESET_MSG);
+			sendCmdResp(msg, process.env.RESET_MSG);
 			return;
 		} else {
 			// Check what personality's memory to delete
@@ -122,12 +132,12 @@ client.on('messageCreate', async msg => {
 				let thisPersonality = personalities[i];
 				if (cutMsg.toUpperCase().startsWith(thisPersonality.name.toUpperCase())) {
 					personalities[i] = { "name": thisPersonality.name, "request" : [{"role": "system", "content": `${process.env["personality." + thisPersonality.name]}`}]};
-					msg.channel.send(process.env.DYNAMIC_RESET_MSG.replace('<p>', thisPersonality.name));
+					sendCmdResp(msg, process.env.DYNAMIC_RESET_MSG.replace('<p>', thisPersonality.name));
 					return;
 				}
 			}
 			// Return error if reset message does not match anything
-			msg.channel.send(process.env.RESET_ERROR_MSG);
+			sendCmdResp(msg, process.env.RESET_ERROR_MSG);
 			return;
 		}
 	}
@@ -138,7 +148,7 @@ client.on('messageCreate', async msg => {
 
 	// Check if bot disabled/enabled
 	if (client.isPaused === true && !isAdmin(msg.author.id)) {
-		msg.channel.send(process.env.DISABLED_MSG);
+		sendCmdResp(msg, process.env.DISABLED_MSG);
 		return;
 	}
 
