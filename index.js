@@ -91,6 +91,7 @@ client.on('messageCreate', async msg => {
 			msg.channel.send(process.env.DISABLE_MSG);
 		} else {
 			msg.channel.send(process.env.COMMAND_PERM_MSG);
+			return;
 		}
 	}
 	if (msg.content === '!enable') {
@@ -99,17 +100,16 @@ client.on('messageCreate', async msg => {
 			msg.channel.send(process.env.ENABLE_MSG);
 		} else {
 			msg.channel.send(process.env.COMMAND_PERM_MSG);
+			return;
 		}
-	}
-
-	// Check if bot disabled/enabled
-	if (client.isPaused === true && !isAdmin(msg.author.id)) {
-		msg.channel.send(process.env.DISABLED_MSG);
-		return;
 	}
 
 	// Reset bot command
 	if (msg.content.startsWith('!reset')) {
+		if (client.isPaused === true && !isAdmin(msg.author.id)) {
+			msg.channel.send(process.env.DISABLED_MSG);
+			return;
+		}
 		let cutMsg = msg.content.slice(7);
 		// Delete all memories if message is "!reset all"
 		if (cutMsg === 'all') {
@@ -135,6 +135,12 @@ client.on('messageCreate', async msg => {
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
 	if (p == null) return;
+
+	// Check if bot disabled/enabled
+	if (client.isPaused === true && !isAdmin(msg.author.id)) {
+		msg.channel.send(process.env.DISABLED_MSG);
+		return;
+	}
 
 	// Add user message to request
 	p.request.push({"role": "user", "content": `${msg.content}`});
