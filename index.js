@@ -142,6 +142,24 @@ client.on('messageCreate', async msg => {
 		}
 	}
 
+	// List personalities bot command
+	if (msg.content === '!personalities') {
+		// Check disabled status
+		if (client.isPaused === true && !isAdmin(msg.author.id)) {
+			sendCmdResp(msg, process.env.DISABLED_MSG);
+			return;
+		}
+		// Create message variable
+		persMsg = process.env.PERSONALITY_MSG + "\n";
+		// Add personality names to variable
+		for (let i = 0; i < personalities.length; i++) {
+			let thisPersonality = personalities[i];
+			persMsg += "- " + thisPersonality.name + "\n"
+		}
+		// Send variable
+		sendCmdResp(msg, persMsg);
+	}
+
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
 	if (p == null) return;
