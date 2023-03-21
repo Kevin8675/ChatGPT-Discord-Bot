@@ -84,12 +84,6 @@ client.on('messageCreate', async msg => {
 	// Don't do anything when message is from bot
 	if (msg.author.bot) return;
 
-	// Check if bot disabled/enabled
-	if (client.isPaused === true && !isAdmin(msg.author.id)) {
-		msg.channel.send(process.env.DISABLED_MSG);
-		return;
-	}
-
 	// Bot commands
 	if (msg.content === '!disable') {
 		if (isAdmin(msg.author.id)) {
