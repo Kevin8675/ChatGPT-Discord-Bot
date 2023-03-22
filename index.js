@@ -1,5 +1,5 @@
 // Require the necessary discord.js classes
-const { Client, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Events, GatewayIntentBits, PermissionFlagsBits } = require('discord.js');
 // Initialize .env config file
 require('dotenv').config();
 // Require openai
@@ -85,8 +85,12 @@ client.isPaused = false;
 adminId = process.env.ADMIN_ID.split(',');
 
 // Check message author id function
-function isAdmin(authorId) {
-	return adminId.includes(authorId);
+function isAdmin(msg) {
+	if (msg.member.permissions.has(PermissionFlagsBits.Administrator) || msg.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
+		return true;
+	} else {
+		return adminId.includes(msg.author.id);
+	}
 }
 
 client.on('messageCreate', async msg => {
@@ -95,7 +99,7 @@ client.on('messageCreate', async msg => {
 
 	// Enable/Disable bot commands
 	if (msg.content === '!disable') {
-		if (isAdmin(msg.author.id)) {
+		if (isAdmin(msg)) {
 			client.isPaused = true;
 			sendCmdResp(msg, process.env.DISABLE_MSG);
 		} else {
@@ -104,7 +108,7 @@ client.on('messageCreate', async msg => {
 		}
 	}
 	if (msg.content === '!enable') {
-		if (isAdmin(msg.author.id)) {
+		if (isAdmin(msg)) {
 			client.isPaused = false;
 			sendCmdResp(msg, process.env.ENABLE_MSG);
 		} else {
@@ -116,7 +120,7 @@ client.on('messageCreate', async msg => {
 	// Reset bot command
 	if (msg.content.startsWith('!reset')) {
 		// Check disabled status
-		if (client.isPaused === true && !isAdmin(msg.author.id)) {
+		if (client.isPaused === true && !isAdmin(msg)) {
 			sendCmdResp(msg, process.env.DISABLED_MSG);
 			return;
 		}
@@ -145,7 +149,7 @@ client.on('messageCreate', async msg => {
 	// List personalities bot command
 	if (msg.content === '!personalities') {
 		// Check disabled status
-		if (client.isPaused === true && !isAdmin(msg.author.id)) {
+		if (client.isPaused === true && !isAdmin(msg)) {
 			sendCmdResp(msg, process.env.DISABLED_MSG);
 			return;
 		}
@@ -165,7 +169,7 @@ client.on('messageCreate', async msg => {
 	if (p == null) return;
 
 	// Check if bot disabled/enabled
-	if (client.isPaused === true && !isAdmin(msg.author.id)) {
+	if (client.isPaused === true && !isAdmin(msg)) {
 		sendCmdResp(msg, process.env.DISABLED_MSG);
 		return;
 	}
