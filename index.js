@@ -4,6 +4,69 @@ const { Client, Events, GatewayIntentBits, PermissionFlagsBits } = require('disc
 require('dotenv').config();
 // Require openai
 const { Configuration, OpenAIApi } = require("openai");
+// Use Azure TTS
+const sdk = require("microsoft-cognitiveservices-speech-sdk");
+// Use Azure Text Analytics for Sentiment Analysis
+const { TextAnalyticsClient, AzureKeyCredential } = require("@azure/ai-text-analytics");
+
+const textAnalyticsKey = process.env.LANGUAGE_KEY;
+const textAnalyticsEndpoint = process.env.LANGUAGE_ENDPOINT;
+const modelName = process.env.GPT_MODEL;
+
+const textAnalyticsClient = new TextAnalyticsClient(textAnalyticsEndpoint, new AzureKeyCredential(textAnalyticsKey));
+
+// Analyze message for sentiment
+async function getMessageSentiment(message) {
+	const sentimentAnalysis = await textAnalyticsClient.analyzeSentiment([message]);
+	return sentimentAnalysis[0].sentiment;
+  }
+  
+// Map sentiements to voice styles
+function mapSentimentToStyle(sentiment) {
+	// Customize this mapping according to your preferences
+	const sentimentStyleMapping = {
+		"positive": "excited",
+		"negative": "angry",
+		"neutral": "unfriendly",
+	};
+
+	return sentimentStyleMapping[sentiment] || "friendly";
+}
+
+async function textToSpeech(text, voice, style) {
+	const subscriptionKey = process.env.AZURE_TTS_KEY;
+	const serviceRegion = process.env.AZURE_SERVICE_REGION;
+  
+	const speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+	speechConfig.speechSynthesisVoiceName = voice;
+  
+	const audioConfig = sdk.AudioConfig.fromAudioFileOutput(`${voice}-${style}.mp3`);
+	const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
+  
+	const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
+	  <voice name="${voice}" style="${style}">${text}</voice>
+	</speak>`;
+  
+	return new Promise((resolve, reject) => {
+	  synthesizer.speakSsmlAsync(
+		ssml,
+		result => {
+		  if (result) {
+			synthesizer.close();
+			resolve(`${voice}-${style}.mp3`);
+		  } else {
+			synthesizer.close();
+			reject(new Error("Text to speech synthesis failed."));
+		  }
+		},
+		error => {
+		  synthesizer.close();
+		  reject(error);
+		}
+	  );
+	});
+}
+
 
 // Set OpenAI API key
 const configuration = new Configuration({
@@ -32,7 +95,15 @@ function initPersonalities() {
 	envKeys.forEach(element => {
 		if (element.startsWith('personality.')) {
 			name = element.slice(12);
-			personalities.push({ "name": name, "request" : [{"role": "system", "content": `${process.env[element]}`}]})
+			//personalities.push({ "name": name, "request" : [{"role": "system", "content": `${process.env[element]}`}]})
+            personalities.push({ 
+                "name": name, 
+                "prompt": process.env[element],
+                "request": [{
+                    "role": "system",
+                    "content": `${process.env[element]}`
+                }]
+            });
 		}
 	});
 }
@@ -71,11 +142,11 @@ function splitMessage(resp, charLim) {
 
 // Send command responses function
 function sendCmdResp(msg, cmdResp) {
-		if (process.env.REPLY_MODE === 'true') {
-			msg.reply(cmdResp);
-		} else {
-			msg.channel.send(cmdResp);
-		}
+    if (process.env.REPLY_MODE === 'true') {
+        msg.reply(cmdResp);
+    } else {
+        msg.channel.send(cmdResp);
+    }
 }
 
 // Create Pause var
@@ -94,8 +165,8 @@ function isAdmin(msg) {
 }
 
 client.on('messageCreate', async msg => {
-	// Don't do anything when message is from bot
-	if (msg.author.bot) return;
+	// Don't do anything when message is from the bot itself or from other bots, based on the BOT_REPLIES environment variable
+	if (msg.author.id === client.user.id || (msg.author.bot && process.env.BOT_REPLIES !== "true")) return;
 
 	// Enable/Disable bot commands
 	if (msg.content === '!disable') {
@@ -117,9 +188,9 @@ client.on('messageCreate', async msg => {
 		}
 	}
 
-	// Reset bot command
+    // Reset bot command
 	if (msg.content.startsWith('!reset')) {
-		// Check disabled status
+        // Check disabled status
 		if (client.isPaused === true && !isAdmin(msg)) {
 			sendCmdResp(msg, process.env.DISABLED_MSG);
 			return;
@@ -146,7 +217,7 @@ client.on('messageCreate', async msg => {
 		}
 	}
 
-	// List personalities bot command
+    // List personalities bot command
 	if (msg.content === '!personalities') {
 		// Check disabled status
 		if (client.isPaused === true && !isAdmin(msg)) {
@@ -154,14 +225,57 @@ client.on('messageCreate', async msg => {
 			return;
 		}
 		// Create message variable
-		persMsg = process.env.PERSONALITY_MSG + "\n";
+        // Output the personalities in a code block, and include their prompts.
+		persMsg = process.env.PERSONALITY_MSG + "\n" + "```";
 		// Add personality names to variable
 		for (let i = 0; i < personalities.length; i++) {
 			let thisPersonality = personalities[i];
-			persMsg += "- " + thisPersonality.name + "\n"
+			//persMsg += "- " + thisPersonality.name + "\n"
+            persMsg += `- ${thisPersonality.name}: ${thisPersonality.prompt}\n`;
 		}
+        persMsg += "```";
 		// Send variable
 		sendCmdResp(msg, persMsg);
+	}
+
+	if (msg.content.startsWith('!tts')) {
+		const input = msg.content.split(' ');
+		const numMessagesBack = input.length > 1 && !isNaN(input[1]) ? parseInt(input[1]) : 1;
+		const botMessages = Array.from(msg.channel.messages.cache.filter(m => m.author.bot).values());
+	  
+		if (botMessages.length >= numMessagesBack) {
+			const lastBotMessage = botMessages[botMessages.length - numMessagesBack];
+			const colonIndex = lastBotMessage.content.indexOf(':');
+			const messageContent = colonIndex !== -1 ? lastBotMessage.content.split(':')[1].trim() : lastBotMessage.content.trim();
+			//const messageContent = lastBotMessage.content.split(':')[1].trim(); // Get the message content after the colon
+
+			const voiceMap = new Map([
+				["jeff", "en-US-JasonNeural"],
+				["tony", "en-US-TonyNeural"],
+				["bobby", "en-US-GuyNeural"],
+				["hank", "en-US-DavisNeural"],
+				["frank", "en-US-TonyNeural"]
+			  ]);
+			if (p == null || p.name == null) return;
+			const voice = voiceMap.get(p.name.toLowerCase()) || "en-US-GuyNeural";
+			getMessageSentiment(lastBotMessage.content).then(sentiment => {
+			  console.log("Sentiment:", sentiment);
+			  const style = mapSentimentToStyle(sentiment); // Get the style based on the sentiment
+			  textToSpeech(messageContent, voice, style)
+				.then(async outputFilePath => {
+			  		await msg.channel.send({
+				//content: "Here's the TTS audio:",
+						files: [outputFilePath]
+			  	});
+			})
+			.catch(error => {
+			  console.error("Text to speech synthesis failed:", error);
+			  msg.channel.send("Failed to generate TTS audio.");
+			});
+		});
+	  } else {
+		msg.channel.send("There are not enough previous bot messages.");
+	  }
 	}
 
 	// Run get personality from message function
@@ -196,7 +310,7 @@ client.on('messageCreate', async msg => {
 async function chat(requestX){
 	// Make API request
 	const completion = await openai.createChatCompletion({
-		model: "gpt-3.5-turbo",
+		model: modelName,
 		messages: requestX
 	});
 

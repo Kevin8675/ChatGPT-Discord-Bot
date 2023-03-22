@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/Kevin8675/ChatGPT-Discord-Bot.git"
   },
+  "scripts": {
+    "start": "node ./index.js"
+  },
   "author": "KevinKraze",
   "license": "MIT",
   "bugs": {
@@ -14,9 +17,10 @@
   },
   "homepage": "https://github.com/Kevin8675/ChatGPT-Discord-Bot#readme",
   "dependencies": {
+    "@azure/ai-text-analytics": "^5.1.0",
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
+    "microsoft-cognitiveservices-speech-sdk": "^1.26.0",
     "openai": "^3.2.1"
-  },
-  "devDependencies": {}
+  }
 }
