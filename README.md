@@ -1,6 +1,9 @@
 # ChatGPT Discord Bot
 A ChatGPT Discord Bot built with NodeJS.
 
+## Public Discord
+You can join the public Discord to try the bot or communicate with me here: https://discord.gg/wMtMXDVhn2
+
 ## Features
 * Multiple Personality Support: Add multiple personalities and depending on how you call the bot, it will respond differently.
 * Enable/Disable/Reset commands for admins.
