@@ -67,7 +67,6 @@ async function textToSpeech(text, voice, style) {
 	});
 }
 
-
 // Set OpenAI API key
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -110,18 +109,24 @@ function initPersonalities() {
 // Run function
 initPersonalities();
 
-// Get called personality from message
 function getPersonality(message) {
-	let personality = null;
-	// For each personality, check if the message includes the the name of the personality
-	for (let i = 0; i < personalities.length; i++) {
-		let thisPersonality = personalities[i];
-		if (message.includes(thisPersonality.name.toUpperCase())) {
-			personality = thisPersonality;
-		}
-	}
-	// Return the personality of the message
-	return personality;
+    let personality = null;
+    let earliestIndex = Infinity;
+
+    // For each personality, check if the message includes the exact name of the personality
+    for (let i = 0; i < personalities.length; i++) {
+        let thisPersonality = personalities[i];
+        const regex = new RegExp('\\b' + thisPersonality.name.toUpperCase() + '\\b');
+        const match = regex.exec(message);
+
+        if (match && match.index < earliestIndex) {
+            personality = thisPersonality;
+            earliestIndex = match.index;
+        }
+    }
+
+    // Return the personality of the message
+    return personality;
 }
 
 // Split message function
@@ -161,6 +166,33 @@ function isAdmin(msg) {
 		return true;
 	} else {
 		return adminId.includes(msg.author.id);
+	}
+}
+function formatDate(date) {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	const hours = String(date.getHours()).padStart(2, '0');
+	const minutes = String(date.getMinutes()).padStart(2, '0');
+	const seconds = String(date.getSeconds()).padStart(2, '0');
+	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+async function callOpenAIWithRetry(apiCall, retries, delay) {
+	let attempts = 0;
+  
+	while (attempts < retries) {
+	  try {
+		const response = await apiCall();
+		return response;
+	  } catch (error) {
+		if (error.statusCode === 502 && attempts < retries - 1) {
+		  console.log('Encountered a 502 error. Retrying...');
+		  attempts++;
+		  await new Promise((resolve) => setTimeout(resolve, delay));
+		} else {
+		  throw error;
+		}
+	  }
 	}
 }
 
@@ -290,50 +322,68 @@ client.on('messageCreate', async msg => {
 
 	// Add user message to request
 	p.request.push({"role": "user", "content": `${msg.content}`});
-	// Start typing indicator
-	msg.channel.sendTyping();
-	// Run API request function
-	const response = await chat(p.request);
-	// Split response if it exceeds the Discord 2000 character limit
-	const responseChunks = splitMessage(response, 2000)
-	// Send the split API response
-	for (let i = 0; i < responseChunks.length; i++) {
-		if (process.env.REPLY_MODE === 'true' && i === 0) {
-			msg.reply(responseChunks[i]);
-		} else {
-			msg.channel.send(responseChunks[i]);
+	try {
+		// Start typing indicator
+		msg.channel.sendTyping();
+		console.log(`[${formatDate(new Date())}] Making API request...`);
+
+		// Run API request function
+		//const response = await chat(p.request);
+		// Call the chat function with retry handling
+		const response = await callOpenAIWithRetry(() => chat(p.request), 3, 5000);
+
+		console.log(`[${formatDate(new Date())}] Received API response.`);
+		// Split response if it exceeds the Discord 2000 character limit
+		const responseChunks = splitMessage(response, 2000)
+		// Send the split API response
+		for (let i = 0; i < responseChunks.length; i++) {
+			if (process.env.REPLY_MODE === 'true' && i === 0) {
+				msg.reply(responseChunks[i]);
+			} else {
+				msg.channel.send(responseChunks[i]);
+			}
 		}
-	}
-})
+	} catch (error) {
+		//console.error('Message processing failed:', error);
+		console.error(`[${formatDate(new Date())}] Message processing failed:`, error);
+		msg.channel.send('An error occurred while processing the message.');
+	  }
+});
 
 // API request function
 async function chat(requestX){
-	// Make API request
-	const completion = await openai.createChatCompletion({
-		model: modelName,
-		messages: requestX
-	});
+	try {
+		// Make API request
+		const completion = await openai.createChatCompletion({
+			model: modelName,
+			messages: requestX
+		});
 
-	// Add assistant message to next request
-	requestX.push({"role": "assistant", "content": `${completion.data.choices[0].message.content}`});
-	let responseContent;
+		// Add assistant message to next request
+		requestX.push({"role": "assistant", "content": `${completion.data.choices[0].message.content}`});
+		let responseContent;
 
-	// Check capitlization mode
-	switch (process.env.CASE_MODE) {
-		case "":
-			responseContent = completion.data.choices[0].message.content;
-			break;
-		case "upper":
-			responseContent = completion.data.choices[0].message.content.toUpperCase();
-			break;
-		case "lower":
-			responseContent = completion.data.choices[0].message.content.toLowerCase();
-			break;
-		default:
-			console.log('Invalid CASE_MODE value. Please change and restart bot.');
+		// Check capitlization mode
+		switch (process.env.CASE_MODE) {
+			case "":
+				responseContent = completion.data.choices[0].message.content;
+				break;
+			case "upper":
+				responseContent = completion.data.choices[0].message.content.toUpperCase();
+				break;
+			case "lower":
+				responseContent = completion.data.choices[0].message.content.toLowerCase();
+				break;
+			default:
+				console.log('Invalid CASE_MODE value. Please change and restart bot.');
+		}
+		// Return response
+		return responseContent;
+	} catch (error) {
+		//console.error('API request failed:', error);
+		console.error(`[${formatDate(new Date())}] API request failed:`, error);
+		throw error;
 	}
-	// Return response
-	return responseContent;
 }
 
 // Log in to Discord with your client's token
