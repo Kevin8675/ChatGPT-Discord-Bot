@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  gpt-bot:
+    image: gpt-bot
+    restart: always
+    volumes:
+      - .env:/app/.env:ro
