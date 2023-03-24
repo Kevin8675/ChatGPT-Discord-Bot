@@ -16,6 +16,8 @@ A GPT powered Discord Bot built with NodeJS.
    * discord.js
    * openai
    * tiktok-tts
+   * ffmpeg-static
+   * child_process
 * [OpenAI API Key](https://platform.openai.com/account/api-keys)
 * [Discord Application Bot](https://discord.com/developers/applications/)
 * [TikTok SessionID](#get-tiktok-session-id)
