@@ -1,7 +1,9 @@
-version: "3.9"
+version: "3.8"
 services:
   gpt-bot:
-    image: gpt-bot
+    image: gpt-discord-bot
     restart: always
     volumes:
       - .env:/app/.env:ro
+    environment:
+      - personality_assistant=You are a helpful assistant.

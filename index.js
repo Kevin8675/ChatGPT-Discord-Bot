@@ -1,8 +1,9 @@
 // Require the necessary discord.js classes
-const { Client, Events, GatewayIntentBits, PermissionFlagsBits } = require('discord.js');
+const { Client, Discord, GatewayIntentBits, PermissionFlagsBits } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 // Initialize .env config file
 require('dotenv').config();
-
+const botCommand = process.env.BOT_COMMAND;
 // Require openai and set API key and setup
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
@@ -25,12 +26,6 @@ config(sessionID, BASE_URL);
 // Voice mappings
 const voiceMapping = {
 	default: 'en_us_rocket',
-    ghostface: 'en_us_ghostface',
-    chewbacca: 'en_us_chewbacca',
-    c3po: 'en_us_c3po',
-    stitch: 'en_us_stitch',
-    stormtrooper: 'en_us_stormtrooper',
-    rocket: 'en_us_rocket',
     au_female: 'en_au_001',
     au_male: 'en_au_002',
     uk_male1: 'en_uk_001',
@@ -41,6 +36,25 @@ const voiceMapping = {
     us_male2: 'en_us_007',
     us_male3: 'en_us_009',
     us_male4: 'en_us_010',
+	alto: 'en_female_f08_salut_damour',
+    tenor: 'en_male_m03_lobby',
+    warmy_breeze: 'en_female_f08_warmy_breeze',
+    sunshine_soon: 'en_male_m03_sunshine_soon',
+    narrator: 'en_male_narration',
+    wacky: 'en_male_funny',
+    peaceful: 'en_female_emotional',
+    serious: 'en_male_cody',
+    pirate: 'en_male_pirate',
+    glorious: 'en_female_ht_f08_glorious',
+    funny_sing: 'en_male_sing_funny_it_goes_up',
+    chipmunk: 'en_male_m2_xhxs_m03_silly',
+    dramatic: 'en_female_ht_f08_wonderful_world',
+	ghostface: 'en_us_ghostface',
+    chewbacca: 'en_us_chewbacca',
+    c3po: 'en_us_c3po',
+    stitch: 'en_us_stitch',
+    stormtrooper: 'en_us_stormtrooper',
+    rocket: 'en_us_rocket',
     fr_male1: 'fr_001',
     fr_male2: 'fr_002',
     de_female: 'de_001',
@@ -58,30 +72,11 @@ const voiceMapping = {
     jp_male: 'jp_006',
     kr_male1: 'kr_002',
     kr_female: 'kr_003',
-    kr_male2: 'kr_004',
-    alto: 'en_female_f08_salut_damour',
-    tenor: 'en_male_m03_lobby',
-    warmy_breeze: 'en_female_f08_warmy_breeze',
-    sunshine_soon: 'en_male_m03_sunshine_soon',
-    narrator: 'en_male_narration',
-    wacky: 'en_male_funny',
-    peaceful: 'en_female_emotional',
-    serious: 'en_male_cody',
-    pirate: 'en_male_pirate',
-    glorious: 'en_female_ht_f08_glorious',
-    funny_sing: 'en_male_sing_funny_it_goes_up',
-    chipmunk: 'en_male_m2_xhxs_m03_silly',
-    dramatic: 'en_female_ht_f08_wonderful_world'
+    kr_male2: 'kr_004'
 };
 
 // Voice descriptions
 const voiceDescriptions = {
-    ghostface: 'Ghost Face',
-    chewbacca: 'Chewbacca',
-    c3po: 'C3PO',
-    stitch: 'Stitch',
-    stormtrooper: 'Stormtrooper',
-    rocket: 'Rocket',
     au_female: 'English AU - Female',
     au_male: 'English AU - Male',
     uk_male1: 'English UK - Male 1',
@@ -92,6 +87,28 @@ const voiceDescriptions = {
     us_male2: 'English US - Male 2',
     us_male3: 'English US - Male 3',
     us_male4: 'English US - Male 4',
+	alto: 'Alto',
+    tenor: 'Tenor',
+    warmy_breeze: 'Female',
+    sunshine_soon: 'Male',
+    narrator: 'Narrator',
+    wacky: 'Wacky',
+    peaceful: 'Female (UK)',
+    serious: 'Male',
+    pirate: 'Male',
+    glorious: 'Female Singing',
+    funny_sing: 'Rising Male Singing',
+    chipmunk: 'High Pitched Singing',
+    dramatic: 'Female Singing',
+	ghostface: 'Ghost Face',
+    chewbacca: 'Chewbacca',
+    c3po: 'C3PO',
+    stitch: 'Stitch',
+    stormtrooper: 'Stormtrooper',
+    rocket: 'Rocket (Guardians)'
+};
+// Voice descriptions
+const ne_voiceDescriptions = {
     fr_male1: 'French - Male 1',
     fr_male2: 'French - Male 2',
     de_female: 'German - Female',
@@ -109,20 +126,7 @@ const voiceDescriptions = {
     jp_male: 'Japanese - Male',
     kr_male1: 'Korean - Male 1',
     kr_female: 'Korean - Female',
-    kr_male2: 'Korean - Male 2',
-    alto: 'Alto',
-    tenor: 'Tenor',
-    warmy_breeze: 'Warmy Breeze - Female',
-    sunshine_soon: 'Sunshine Soon - Male',
-    narrator: 'Narrator',
-    wacky: 'Wacky',
-    peaceful: 'Peaceful - Female (UK)',
-    serious: 'Serious - Male',
-    pirate: 'Pirate',
-    glorious: 'Glorious - Female Singing',
-    funny_sing: 'It Goes Up - Male Singing',
-    chipmunk: 'Chipmunk - Female Silly Singing',
-    dramatic: 'Dramatic Singing - Female'
+    kr_male2: 'Korean - Male 2'
 };
 
 async function mergeAudioFiles(files, outputFile) {
@@ -185,9 +189,9 @@ let personalities;
 function initPersonalities() {
 	personalities = [];
 	let envKeys = Object.keys(process.env);
-	// For each variable in .env check if starts with personality. and add to personalities array if true
+	// For each variable in .env check if starts with personality_ and add to personalities array if true
 	envKeys.forEach(element => {
-		if (element.startsWith('personality.')) {
+		if (element.startsWith('personality_')) {
 			name = element.slice(12);
 			//personalities.push({ "name": name, "request" : [{"role": "system", "content": `${process.env[element]}`}]})
             personalities.push({ 
@@ -290,13 +294,62 @@ async function callOpenAIWithRetry(apiCall, retries, delay) {
 	  }
 	}
 }
+function groupVoiceDescriptions(voiceDescriptions) {
+    const grouped = {};
+    const regex = /^(.*\D)(\d+)$/;
+
+    for (const key in voiceDescriptions) {
+        const match = key.match(regex);
+        if (match) {
+            const prefix = match[1];
+            const number = match[2];
+
+            if (grouped[prefix]) {
+                grouped[prefix].push(number);
+            } else {
+                grouped[prefix] = [number];
+            }
+        } else {
+            grouped[key] = voiceDescriptions[key];
+        }
+    }
+
+    const newVoiceDescriptions = {};
+    for (const key in grouped) {
+        if (Array.isArray(grouped[key])) {
+            const newKey = `${key}${grouped[key].join('_')}`;
+            newVoiceDescriptions[newKey] = voiceDescriptions[`${key}${grouped[key][0]}`];
+        } else {
+            newVoiceDescriptions[key] = grouped[key];
+        }
+    }
+
+    return newVoiceDescriptions;
+}
+
+function voiceEmbed(voiceDescriptions, title) {
+	const formattedDescriptions = groupVoiceDescriptions(voiceDescriptions);
+	// create an embed object
+	let voiceEmbed = new EmbedBuilder()
+		.setColor(0x0099FF) // set the color of the embed
+		.setTitle(title) // set the title of the embed
+		.setDescription('Here are the '+ title +' you can use'); // set the description of the embed
+
+	// loop through your voiceDescriptions object and add fields to the embed
+	for (let key in formattedDescriptions) {
+		const formattedKey = key.replace(/(\d)_/g, '$1,');
+		voiceEmbed.addFields({ name: formattedKey, value: formattedDescriptions[key], inline: true });
+	}
+
+	return voiceEmbed;
+}
 
 client.on('messageCreate', async msg => {
 	// Don't do anything when message is from the bot itself or from other bots, based on the BOT_REPLIES environment variable
 	if (msg.author.id === client.user.id || (msg.author.bot && process.env.BOT_REPLIES !== "true")) return;
 
 	// Enable/Disable bot commands
-	if (msg.content === '!disable') {
+	if (msg.content === botCommand + 'disable') {
 		if (isAdmin(msg)) {
 			client.isPaused = true;
 			sendCmdResp(msg, process.env.DISABLE_MSG);
@@ -305,7 +358,7 @@ client.on('messageCreate', async msg => {
 			return;
 		}
 	}
-	if (msg.content === '!enable') {
+	if (msg.content === botCommand + 'enable') {
 		if (isAdmin(msg)) {
 			client.isPaused = false;
 			sendCmdResp(msg, process.env.ENABLE_MSG);
@@ -316,7 +369,7 @@ client.on('messageCreate', async msg => {
 	}
 
     // Reset bot command
-	if (msg.content.startsWith('!reset')) {
+	if (msg.content.startsWith(botCommand + 'reset')) {
         // Check disabled status
 		if (client.isPaused === true && !isAdmin(msg)) {
 			sendCmdResp(msg, process.env.DISABLED_MSG);
@@ -345,7 +398,7 @@ client.on('messageCreate', async msg => {
 	}
 
     // List personalities bot command
-	if (msg.content === '!personalities') {
+	if (msg.content === botCommand + 'personalities') {
 		// Check disabled status
 		if (client.isPaused === true && !isAdmin(msg)) {
 			sendCmdResp(msg, process.env.DISABLED_MSG);
@@ -365,7 +418,7 @@ client.on('messageCreate', async msg => {
 		sendCmdResp(msg, persMsg);
 	}
 
-	if (msg.content.startsWith('!say')) {
+	if (msg.content.startsWith(botCommand + 'say')) {
 		const input = msg.content.split(' ').slice(1);
 		const messageIdOrNumBack = !isNaN(input[0]) ? input.shift() : 1;
 		const speakerKey = input.length > 0 && voiceMapping.hasOwnProperty(input[0].toLowerCase()) ? input.shift().toLowerCase() : "default";
@@ -417,7 +470,7 @@ client.on('messageCreate', async msg => {
 		}
 	}
 
-	if (msg.content.startsWith('!tts')) {
+	if (msg.content.startsWith(botCommand + 'tts')) {
         // Check disabled status
         if (client.isPaused === true && !isAdmin(msg)) {
             sendCmdResp(msg, process.env.DISABLED_MSG);
@@ -480,16 +533,45 @@ client.on('messageCreate', async msg => {
         }
     }
 
-	if (msg.content.startsWith('!help')) {
-        let helpMessage = 'Available voices:\n```\n';
-        for (let key in voiceDescriptions) {
-            helpMessage += `${key}: ${voiceDescriptions[key]}\n`;
-        }
-        helpMessage += '```\n';
-        msg.channel.send(helpMessage);
-    }
+	if (msg.content.startsWith(botCommand + 'help')) {
+		// create an embed object
+		let helpEmbed = new EmbedBuilder()
+			.setColor(0x0099FF) // set the color of the embed
+			.setTitle('**Bot Commands**') // set the title of the embed
+			.setDescription('Here are some commands you can use'); // set the description of the embed
+	
+		// add fields to the embed for each command and its usage
+		helpEmbed.addFields(
+			{ name: `${botCommand}enable`, value: 'Enables the bot.' },
+			{ name: `${botCommand}disable`, value: 'Disables the bot.' },
+			{ name: `${botCommand}reset`, value: `Resets the memory of all personalities or a single personality. \n \`${botCommand}reset [all,<personality_name>]\`` },
+			{ name: `${botCommand}personality`, value: 'Displays all personalities and their prompts.' },
+			{ name: `${botCommand}tts`, value: `Generates TTS for a message. \n \`${botCommand}tts <speaker> [<text>,<messageID>] \`` },
+			{ name: `${botCommand}say`, value: `Generates TTS for a bot message. With no input, uses the last message with \`rocket\`. Both arguments are optional. \n \`${botCommand}say [<number>,<messageID>] <speaker>\`` },
+			{ name: `${botCommand}speakers`, value: `Displays all TTS speakers available to the \`${botCommand}tts\` command.` },
+			{ name: `${botCommand}sample`, value:`Listen to samples of each available speaker to the \`${botCommand}tts\` command. \n \`${botCommand}sample <speaker>\``},
+			{ name:`${botCommand}help`,value:'Displays this help message.'}
+		);
+	
+		// send the embed to the channel
+		msg.channel.send({ embeds:[helpEmbed] });
+	}
 
-    if (msg.content.startsWith('!sample')) {
+	if (msg.content.startsWith(botCommand + 'speakers')) {
+		const [, ne_voices] = msg.content.split(' ')
+		let voiceEmbed_en = voiceEmbed(voiceDescriptions, 'English Speakers')
+		// send the embed to the channel
+		msg.channel.send({ embeds: [voiceEmbed_en] });
+
+		if(ne_voices == "all"){
+			let voiceEmbed_ne = voiceEmbed(ne_voiceDescriptions, 'Non-English Speakers')
+			// send the embed to the channel
+			msg.channel.send({ embeds: [voiceEmbed_ne] });
+		}
+		
+	}
+
+    if (msg.content.startsWith(botCommand + 'sample')) {
         // Extract the speakerKey from the command
         const [, speakerKey] = msg.content.split(' ');
     
