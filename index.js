@@ -130,8 +130,12 @@ client.on(Events.InteractionCreate, async interaction => {
 })
 
 client.on('messageCreate', async msg => {
-	// Don't do anything when message is from bot
-	if (msg.author.bot) return;
+	// Don't do anything when message is from self or bot depending on config
+	if (process.env.BOT_REPLIES === 'true') {
+		if (msg.author.id === client.user.id) return;
+	} else {
+		if (msg.author.bot) return;
+	}
 
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
