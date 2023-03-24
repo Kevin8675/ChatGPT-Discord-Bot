@@ -1,0 +1,22 @@
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
+
+build-push-docker-image-job:
+  only:
+    refs:
+      - main
+    changes:
+      - Dockerfile
+      - index.js
+      - package.josn
+  # Specify a Docker image to run the job in.
+  image: docker:latest
+  # Specify an additional image 'docker:dind' ("Docker-in-Docker") that
+  # will start up the Docker daemon when it is brought up by a runner.
+  services:
+    - docker:dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $IMAGE_TAG
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
