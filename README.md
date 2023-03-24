@@ -1,5 +1,5 @@
 # ChatGPT Discord Bot
-A ChatGPT Discord Bot built with NodeJS.
+A ChatGPT powered Discord chatbot built with NodeJS.
 
 ## Public Discord
 You can join the public Discord to try the bot or communicate with me here: https://discord.gg/wMtMXDVhn2
@@ -21,11 +21,11 @@ You can join the public Discord to try the bot or communicate with me here: http
 
 ## Setup/Installation
 1. Create an [OpenAI API Key](https://platform.openai.com/account/api-keys). Copy the key somewhere for usage later.
-2. Create a [Discord Application Bot](https://discord.com/developers/applications/). You can follow [this](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot) tutorial. Copy the bot token somewhere for usage later.
+2. Create a [Discord Application Bot](https://discord.com/developers/applications/). You can follow [this](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot) tutorial. Make sure to enable the "Message Content Intent" under the "Priveralged Gateway Intents" section in the "Bot" tab. Copy the bot token somewhere for usage later.
 3. Invite the bot to your server. You can follow [this](https://discordjs.guide/preparations/adding-your-bot-to-servers.html) tutorial.
 4. Install [NodeJS](https://nodejs.org/) for your system. Refer to Google for installation based on OS.
 5. Download Source Code from releases or clone this repo for dev build.
-6. If you downloaded release, extract zip and cd into folder in a terminal. If you cloned repo, cd into repo directory.
+6. If you downloaded a release, extract the zip and open the extracted zip folder in a terminal. If you cloned repo, open the repo directory in a terminal.
 7. Run `npm ci` to install NPM dependencies.
 8. Copy `.env.example` to `.env` and add your bot token and insert your API key and token into `.env`. Add 1 or more personalities. Change other options to your liking.
 9. Finally, run `node index.js` or `nodejs index.js` depending on your NodeJS installation.
