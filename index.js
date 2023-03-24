@@ -1,9 +1,14 @@
+// Require the necessary node classes
+const fs = require('node:fs');
+const path = require('node:path');
 // Require the necessary discord.js classes
-const { Client, Events, GatewayIntentBits, PermissionFlagsBits } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, PermissionFlagsBits } = require('discord.js');
 // Initialize .env config file
 require('dotenv').config();
 // Require openai
 const { Configuration, OpenAIApi } = require("openai");
+// Require global functions
+const { initPersonalities } = require(path.join(__dirname, "common.js"));
 
 // Set OpenAI API key
 const configuration = new Configuration({
@@ -16,35 +21,43 @@ const openai = new OpenAIApi(configuration);
 // Create a new client instance
 const client = new Client({intents: [GatewayIntentBits.Guilds,GatewayIntentBits.GuildMessages,GatewayIntentBits.MessageContent,] });
 
+// Initialize Commands
+client.commands = new Collection();
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+// Initialize command files
+for (const file of commandFiles) {
+	const filePath = path.join(commandsPath, file);
+	const command = require(filePath);
+	// Set a new item in the Collection with the key as the command name and the value as the exported module
+	if ('data' in command && 'execute' in command) {
+		client.commands.set(command.data.name, command);
+	} else {
+		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+	}
+}
+
 // Console log when logged in
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-// Create personalities array
-let personalities;
+// Create state array
+let state = {
+	isPaused: false,
+	personalities: [],
 
-// Initialize personalities function
-function initPersonalities() {
-	personalities = [];
-	let envKeys = Object.keys(process.env);
-	// For each variable in .env check if starts with personality. and add to personalities array if true
-	envKeys.forEach(element => {
-		if (element.startsWith('personality.')) {
-			name = element.slice(12);
-			personalities.push({ "name": name, "request" : [{"role": "system", "content": `${process.env[element]}`}]})
-		}
-	});
-}
+};
+
 // Run function
-initPersonalities();
+initPersonalities(state.personalities, process.env);
 
 // Get called personality from message
 function getPersonality(message) {
 	let personality = null;
 	// For each personality, check if the message includes the the name of the personality
-	for (let i = 0; i < personalities.length; i++) {
-		let thisPersonality = personalities[i];
+	for (let i = 0; i < state.personalities.length; i++) {
+		let thisPersonality = state.personalities[i];
 		if (message.includes(thisPersonality.name.toUpperCase())) {
 			personality = thisPersonality;
 		}
@@ -71,15 +84,12 @@ function splitMessage(resp, charLim) {
 
 // Send command responses function
 function sendCmdResp(msg, cmdResp) {
-		if (process.env.REPLY_MODE === 'true') {
-			msg.reply(cmdResp);
-		} else {
-			msg.channel.send(cmdResp);
-		}
+	if (process.env.REPLY_MODE === 'true') {
+		msg.reply(cmdResp);
+	} else {
+		msg.channel.send(cmdResp);
+	}
 }
-
-// Create Pause var
-client.isPaused = false;
 
 // Set admin user IDs
 adminId = process.env.ADMIN_ID.split(',');
@@ -93,83 +103,42 @@ function isAdmin(msg) {
 	}
 }
 
+// Listen for interactions/Commands
+client.on(Events.InteractionCreate, async interaction => {
+	// Don't do anything if the interaction is not a slash command
+	if (!interaction.isChatInputCommand()) return;
+
+	const command = interaction.client.commands.get(interaction.commandName);
+
+	if (!command) {
+		console.error(`No command matching ${interaction.commandName} was found.`);
+		return;
+	}
+
+	// Execute the command and log errors if they appear
+	try {
+		await command.execute(interaction, state);
+	} catch (error) {
+		console.error(error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+		} else {
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+	}
+
+})
+
 client.on('messageCreate', async msg => {
 	// Don't do anything when message is from bot
 	if (msg.author.bot) return;
-
-	// Enable/Disable bot commands
-	if (msg.content === '!disable') {
-		if (isAdmin(msg)) {
-			client.isPaused = true;
-			sendCmdResp(msg, process.env.DISABLE_MSG);
-		} else {
-			sendCmdResp(msg, process.env.COMMAND_PERM_MSG);
-			return;
-		}
-	}
-	if (msg.content === '!enable') {
-		if (isAdmin(msg)) {
-			client.isPaused = false;
-			sendCmdResp(msg, process.env.ENABLE_MSG);
-		} else {
-			sendCmdResp(msg, process.env.COMMAND_PERM_MSG);
-			return;
-		}
-	}
-
-	// Reset bot command
-	if (msg.content.startsWith('!reset')) {
-		// Check disabled status
-		if (client.isPaused === true && !isAdmin(msg)) {
-			sendCmdResp(msg, process.env.DISABLED_MSG);
-			return;
-		}
-		let cutMsg = msg.content.slice(7);
-		// Delete all memories if message is "!reset all"
-		if (cutMsg === 'all') {
-			initPersonalities();
-			sendCmdResp(msg, process.env.RESET_MSG);
-			return;
-		} else {
-			// Check what personality's memory to delete
-			for (let i = 0; i < personalities.length; i++) {
-				let thisPersonality = personalities[i];
-				if (cutMsg.toUpperCase().startsWith(thisPersonality.name.toUpperCase())) {
-					personalities[i] = { "name": thisPersonality.name, "request" : [{"role": "system", "content": `${process.env["personality." + thisPersonality.name]}`}]};
-					sendCmdResp(msg, process.env.DYNAMIC_RESET_MSG.replace('<p>', thisPersonality.name));
-					return;
-				}
-			}
-			// Return error if reset message does not match anything
-			sendCmdResp(msg, process.env.RESET_ERROR_MSG);
-			return;
-		}
-	}
-
-	// List personalities bot command
-	if (msg.content === '!personalities') {
-		// Check disabled status
-		if (client.isPaused === true && !isAdmin(msg)) {
-			sendCmdResp(msg, process.env.DISABLED_MSG);
-			return;
-		}
-		// Create message variable
-		persMsg = process.env.PERSONALITY_MSG + "\n";
-		// Add personality names to variable
-		for (let i = 0; i < personalities.length; i++) {
-			let thisPersonality = personalities[i];
-			persMsg += "- " + thisPersonality.name + "\n"
-		}
-		// Send variable
-		sendCmdResp(msg, persMsg);
-	}
 
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
 	if (p == null) return;
 
 	// Check if bot disabled/enabled
-	if (client.isPaused === true && !isAdmin(msg)) {
+	if (state.isPaused === true && !isAdmin(msg)) {
 		sendCmdResp(msg, process.env.DISABLED_MSG);
 		return;
 	}
@@ -216,7 +185,7 @@ async function chat(requestX){
 			responseContent = completion.data.choices[0].message.content.toLowerCase();
 			break;
 		default:
-			console.log('Invalid CASE_MODE value. Please change and restart bot.');
+			console.log('[WARNING] Invalid CASE_MODE value. Please change and restart bot.');
 	}
 	// Return response
 	return responseContent;
