@@ -4,7 +4,7 @@ variables:
 build-push-docker-image-job:
   only:
     refs:
-      - main
+      - master
     changes:
       - Dockerfile
       - index.js
