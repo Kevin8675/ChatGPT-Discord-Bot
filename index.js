@@ -404,18 +404,22 @@ client.on('messageCreate', async msg => {
 			sendCmdResp(msg, process.env.DISABLED_MSG);
 			return;
 		}
-		// Create message variable
-        // Output the personalities in a code block, and include their prompts.
-		persMsg = process.env.PERSONALITY_MSG + "\n" + "```";
-		// Add personality names to variable
+		// Create an embed object
+		let persEmbed = new EmbedBuilder()
+			.setColor(0x0099FF) // set the color of the embed
+			.setTitle(process.env.PERSONALITY_MSG) // set the title of the embed
+			.setDescription('Here are some personalities and their prompts'); // set the description of the embed
+	
+		// Add personality names and prompts to fields
 		for (let i = 0; i < personalities.length; i++) {
 			let thisPersonality = personalities[i];
-			//persMsg += "- " + thisPersonality.name + "\n"
-            persMsg += `- ${thisPersonality.name}: ${thisPersonality.prompt}\n`;
+			// Truncate the prompt to 1024 characters if it's longer than that
+			let truncatedPrompt = thisPersonality.prompt.substring(0, 1024);
+			persEmbed.addFields({ name: thisPersonality.name, value: truncatedPrompt });
 		}
-        persMsg += "```";
-		// Send variable
-		sendCmdResp(msg, persMsg);
+	
+		// Send the embed
+		sendCmdResp(msg,{embeds:[persEmbed]});
 	}
 
 	if (msg.content.startsWith(botCommand + 'say')) {
