@@ -35,9 +35,10 @@ You can join the public Discord to try the bot or communicate with me here: http
 ## Usage
 Once the server is started, simply send a message containing the personality name you put in the `.env` file and a question, comment, etc. and the bot will respond!
 ### Commands
-* `!enable`: Enables the bot.
-* `!disable`: Disables the bot.
-* `!reset [all,<personality_name>]`: Resets the memory of all personalities or a single personality.
+* `/enable`: Enables the bot.
+* `/disable`: Disables the bot.
+* `/reset [all,<personality_name>]`: Resets the memory of all personalities or a single personality.
+* `/personalities`: List personalities.
 
 ## Contributing
 Feel free to fork this repo and submit pull requests for different features, fixes, and changes.
