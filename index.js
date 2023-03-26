@@ -167,32 +167,38 @@ client.on('messageCreate', async msg => {
 
 // API request function
 async function chat(requestX){
-	// Make API request
-	const completion = await openai.createChatCompletion({
-		model: "gpt-3.5-turbo",
-		messages: requestX
-	});
+  try {
+    // Make API request
+    const completion = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: requestX
+    });
 
-	// Add assistant message to next request
-	requestX.push({"role": "assistant", "content": `${completion.data.choices[0].message.content}`});
-	let responseContent;
+    // Add assistant message to next request
+    requestX.push({"role": "assistant", "content": `${completion.data.choices[0].message.content}`});
+    let responseContent;
 
-	// Check capitlization mode
-	switch (process.env.CASE_MODE) {
-		case "":
-			responseContent = completion.data.choices[0].message.content;
-			break;
-		case "upper":
-			responseContent = completion.data.choices[0].message.content.toUpperCase();
-			break;
-		case "lower":
-			responseContent = completion.data.choices[0].message.content.toLowerCase();
-			break;
-		default:
-			console.log('[WARNING] Invalid CASE_MODE value. Please change and restart bot.');
-	}
-	// Return response
-	return responseContent;
+    // Check capitlization mode
+    switch (process.env.CASE_MODE) {
+      case "":
+        responseContent = completion.data.choices[0].message.content;
+        break;
+      case "upper":
+        responseContent = completion.data.choices[0].message.content.toUpperCase();
+        break;
+      case "lower":
+        responseContent = completion.data.choices[0].message.content.toLowerCase();
+        break;
+      default:
+        console.log('[WARNING] Invalid CASE_MODE value. Please change and restart bot.');
+    }
+    // Return response
+    return responseContent;
+  } catch (error) {
+    // Return error message if API error occurs
+    console.error(`[ERROR] OpenAI API request failed: ${error}`);
+    return process.env.API_ERROR_MSG;
+  }
 }
 
 // Log in to Discord with your client's token
