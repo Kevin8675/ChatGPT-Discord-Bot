@@ -139,6 +139,15 @@ client.on('messageCreate', async msg => {
 
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
+	// Check if message is a reply if no personality name
+	if (p == null && msg.reference.messageId) {
+		let refMsg = await msg.fetchReference();
+		// Check if the reply is to the bot
+		if (refMsg.author.id === client.user.id) {
+			// Check the personality that the message being replied to is from
+			p = state.personalities.find(pers => pers.request.some(element => (element.content === refMsg.content)));
+		}
+	}
 	if (p == null) return;
 
 	// Check if bot disabled/enabled
