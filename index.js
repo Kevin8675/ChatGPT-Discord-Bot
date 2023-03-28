@@ -140,7 +140,7 @@ client.on('messageCreate', async msg => {
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
 	// Check if message is a reply if no personality name
-	if (p == null && msg.reference.messageId) {
+	if (p == null && msg.reference?.messageId) {
 		let refMsg = await msg.fetchReference();
 		// Check if the reply is to the bot
 		if (refMsg.author.id === client.user.id) {
