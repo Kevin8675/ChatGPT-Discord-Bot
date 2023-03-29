@@ -54,11 +54,13 @@ initPersonalities(state.personalities, process.env);
 
 // Get called personality from message
 function getPersonality(message) {
+	// Function to check for the personality name
+	const checkPers = (msg, word) => new RegExp('\\b' + word + '\\b', 'i').test(msg);
 	let personality = null;
 	// For each personality, check if the message includes the the name of the personality
 	for (let i = 0; i < state.personalities.length; i++) {
 		let thisPersonality = state.personalities[i];
-		if (message.includes(thisPersonality.name.toUpperCase())) {
+		if (checkPers(message, thisPersonality.name)) {
 			personality = thisPersonality;
 		}
 	}
