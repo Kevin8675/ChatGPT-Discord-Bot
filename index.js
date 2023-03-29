@@ -183,8 +183,6 @@ async function chat(requestX){
 		messages: requestX
 		});
 
-		// Add assistant message to next request
-		requestX.push({"role": "assistant", "content": `${completion.data.choices[0].message.content}`});
 		let responseContent;
 
 		// Check capitlization mode
@@ -201,6 +199,10 @@ async function chat(requestX){
 		default:
 			console.log('[WARNING] Invalid CASE_MODE value. Please change and restart bot.');
 		}
+
+		// Add assistant message to next request
+		requestX.push({"role": "assistant", "content": `${responseContent}`});
+		
 		// Return response
 		return responseContent;
 	} catch (error) {
