@@ -48,8 +48,8 @@ Once the server is started, simply send a message containing the personality nam
 To use the deploy/delete script, run `node ./deploy-commands.js` followed by one or more arguments. The available arguments are:
 
 *   `[env]` (optional): the name of the `.env` file to use. If not specified, the script will use `.env` by default.
-*   `-d [command]` (optional): the name of the command to delete. If specified, the script will delete the command with the given name instead of deploying all commands.
-*   `-x [file]` (optional): the name of a command file to ignore. If specified, the script will not deploy the command with the given name.
+*   `-d [command]` (optional): the name of the command to delete. If specified, the script will delete the command with the given id.
+*   `-x [file]` (optional): the name of a command file(s) to ignore. If specified, the script will not deploy the command(s) with the given file name(s).
 
 To deploy all commands using the default `.env` file, run:
 
