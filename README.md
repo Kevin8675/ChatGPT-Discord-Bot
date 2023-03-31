@@ -38,7 +38,7 @@ Once the server is started, simply send a message containing the personality nam
 * `/enable`: Enables the bot.
 * `/disable`: Disables the bot.
 * `/reset [all,<personality_name>]`: Resets the memory of all personalities or a single personality.
-* `/personalities`: List personalities.
+* `/personalities`: Lists available personalities and their prompts.
 
 ## Contributing
 Feel free to fork this repo and submit pull requests for different features, fixes, and changes.
