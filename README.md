@@ -2,13 +2,14 @@
 A ChatGPT powered Discord chatbot built with NodeJS.
 
 ## Public Discord
-You can join the public Discord to try the bot or communicate with me here: https://discord.gg/wMtMXDVhn2
+You can join the public Discord to try the bot or communicate with me or other users here: https://discord.gg/wMtMXDVhn2
 
 ## Features
 * Multiple Personality Support: Add multiple personalities and depending on how you call the bot, it will respond differently.
 * Enable/Disable/Reset commands for admins.
 * Memory: Bot will remember conversations until restarted or reset.
 * Message splitter for longer messages that exceed 2000 characters.
+* Token limiter: Ability to limit amount of tokens being used in a span of time.
 
 ## Dependencies
 * nodejs
@@ -33,14 +34,16 @@ You can join the public Discord to try the bot or communicate with me here: http
 11. **OPTIONAL** Install [PM2](https://pm2.keymetrics.io/) if you want to keep your bot active. Run `pm2 start index.js --watch` to start it.
 
 ## Usage
-Once the server is started, simply send a message containing the personality name you put in the `.env` file and a question, comment, etc. and the bot will respond!
+Once the bot is started, simply send a message containing the personality name you put in the `.env` file or reply to a message from the bot and the bot will respond!
 ### Commands
 * `/enable`: Enables the bot.
 * `/disable`: Disables the bot.
-* `/reset [all,<personality_name>]`: Resets the memory of all personalities or a single personality. If personality is ephemeral, sets its prompt to `undefined`.
+* `/reset`: Resets the memory of all personalities or a single personality. If personality is ephemeral, sets its prompt to `undefined`.
+  - Usage: `/reset <personality_name>`
 * `/personalities`: Lists available personalities and their prompts.
 * `/add-personality`: Adds an ephemeral personality to the bot, it will be lost when the bot restarts. Can also update `undefined` prompts.
   - Usage: `/add-personality <name> <prompt>`
+* `/token-reset`: Resets the current token count.
 
 ## Contributing
 Feel free to fork this repo and submit pull requests for different features, fixes, and changes.
