@@ -6,7 +6,7 @@ require('dotenv').config({ path: '/.env'});
 module.exports = {
     data: new SlashCommandBuilder()
         // Command details
-        .setName('tokenreset')
+        .setName('token-reset')
         .setDescription('Reset the token count.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
     async execute(interaction, state) {
