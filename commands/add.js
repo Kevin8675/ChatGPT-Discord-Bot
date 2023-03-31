@@ -35,9 +35,9 @@ module.exports = {
                     "role": "system",
                     "content": `${prompt}`
                 }];
-                await interaction.reply(`Updated the prompt for the existing personality "${name}".`);
+                await interaction.reply(process.env.UPDATE_PERSONALITY_MSG.replace("<n>", name));
             } else {
-                await interaction.reply('A personality with this name already exists. Please choose a different name.');
+                await interaction.reply(process.env.UPDATE_PERS_ERROR_MSG);
             }
             return;
         }
@@ -51,6 +51,6 @@ module.exports = {
             }]
         });
 
-        await interaction.reply(`New personality "${name}" added.`);
+        await interaction.reply(process.env.ADDED_PERSONALITY_MSG.replace("<n>", name));
     },
 };
