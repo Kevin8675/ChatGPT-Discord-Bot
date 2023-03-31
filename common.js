@@ -7,7 +7,7 @@ function initPersonalities(personalities, env) {
 	// For each variable in .env check if starts with personality. and add to personalities array if true
 	envKeys.forEach(element => {
 		if (element.startsWith('personality.')) {
-			name = element.slice(12);
+			let name = element.slice(12);
 			personalities.push({ "name": name, "request" : [{"role": "system", "content": `${env[element]}`}]})
 		}
 	});
