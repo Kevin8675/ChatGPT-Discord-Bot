@@ -46,7 +46,8 @@ client.on('ready', () => {
 let state = {
 	isPaused: false,
 	personalities: [],
-
+	timer: null,
+	tokenCount: null
 };
 
 // Run function
@@ -152,10 +153,25 @@ client.on('messageCreate', async msg => {
 	}
 	if (p == null) return;
 
-	// Check if bot disabled/enabled
-	if (state.isPaused === true && !isAdmin(msg)) {
-		sendCmdResp(msg, process.env.DISABLED_MSG);
-		return;
+	// Check if not admin
+	if (!isAdmin(msg)) {
+		// Check if bot disabled/enabled
+		if (state.isPaused === true) {
+			sendCmdResp(msg, process.env.DISABLED_MSG);
+			return;
+		}
+
+		timePassed = Math.abs(new Date() - state.timer);
+		// Set variables on first start or when time exceeds timer
+		if (timePassed >= parseInt(process.env.TOKEN_RESET_TIME, 10) || state.timer === null) {
+			state.timer = new Date();
+			state.tokenCount = 0;
+		}
+		// Send message when token limit reached
+		if (timePassed < parseInt(process.env.TOKEN_RESET_TIME, 10) && state.tokenCount >= parseInt(process.env.TOKEN_NUM, 10)) {
+			sendCmdResp(msg, process.env.TOKEN_LIMIT_MSG.replace("<m>", Math.round((parseInt(process.env.TOKEN_RESET_TIME, 10) - timePassed) / parseInt(process.env.TOKEN_RESET_TIME, 10) * 10) / 10));
+			return;
+		}
 	}
 
 	// Add user message to request
@@ -163,7 +179,7 @@ client.on('messageCreate', async msg => {
 	// Start typing indicator
 	msg.channel.sendTyping();
 	// Run API request function
-	const response = await chat(p.request);
+	const response = await chat(p.request, msg);
 	// Split response if it exceeds the Discord 2000 character limit
 	const responseChunks = splitMessage(response, 2000)
 	// Send the split API response
@@ -177,13 +193,18 @@ client.on('messageCreate', async msg => {
 })
 
 // API request function
-async function chat(requestX){
+async function chat(requestX, msg){
 	try {
 		// Make API request
 		const completion = await openai.createChatCompletion({
 		model: "gpt-3.5-turbo",
 		messages: requestX
 		});
+
+		// Increase token counter if not admin
+		if (!isAdmin(msg)) {
+			state.tokenCount += completion.data.usage.completion_tokens;
+		}
 
 		let responseContent;
 
