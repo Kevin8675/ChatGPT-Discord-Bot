@@ -69,10 +69,10 @@ To delete a command, find its command id, then run:
 node ./deploy-commands.js bot2.env -d COMMAND_ID
 ```
 
-To deploy all commands except the command in `ignore.js`, run:
+To deploy all commands except the commands in `ignore.js` and `test.js`, run:
 
 ```bash
-node ./deploy-commands.js bot2.env -x ignore.js
+node ./deploy-commands.js bot2.env -x ignore.js,test.js
 ```
 </details>
 
