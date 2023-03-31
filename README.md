@@ -28,7 +28,7 @@ You can join the public Discord to try the bot or communicate with me here: http
 6. If you downloaded a release, extract the zip and open the extracted zip folder in a terminal. If you cloned repo, open the repo directory in a terminal.
 7. Run `npm ci` to install NPM dependencies.
 8. Copy `.env.example` to `.env` and add your bot token and insert your API key and token into `.env`. Add 1 or more personalities. Change other options to your liking.
-9. Run node `deploy-commands.js` to deploy the bot's slash commands to discord. See [below](#deploying-commands) for additional details.
+9. Run `node deploy-commands.js` to deploy the bot's slash commands to discord. See [below](#deploying-commands) for additional details.
 10. Finally, run `node index.js` or `nodejs index.js` depending on your NodeJS installation.
 11. **OPTIONAL** Install [PM2](https://pm2.keymetrics.io/) if you want to keep your bot active. Run `pm2 start index.js --watch` to start it.
 
