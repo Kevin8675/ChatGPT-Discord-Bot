@@ -37,8 +37,10 @@ Once the server is started, simply send a message containing the personality nam
 ### Commands
 * `/enable`: Enables the bot.
 * `/disable`: Disables the bot.
-* `/reset [all,<personality_name>]`: Resets the memory of all personalities or a single personality.
+* `/reset [all,<personality_name>]`: Resets the memory of all personalities or a single personality. If personality is ephemeral, sets its prompt to `undefined`.
 * `/personalities`: Lists available personalities and their prompts.
+* `/add-personality`: Adds an ephemeral personality to the bot, it will be lost when the bot restarts. Can also update `undefined` prompts.
+  - Usage: `/add-personality <name> <prompt>`
 
 ## Contributing
 Feel free to fork this repo and submit pull requests for different features, fixes, and changes.
