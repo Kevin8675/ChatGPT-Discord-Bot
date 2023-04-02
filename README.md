@@ -44,6 +44,7 @@ Once the bot is started, simply send a message containing the personality name y
 * `/add-personality`: Adds an ephemeral personality to the bot, it will be lost when the bot restarts. Can also update `undefined` prompts.
   - Usage: `/add-personality <name> <prompt>`
 * `/token-reset`: Resets the current token count.
+* `/token-count`: Shows the number of total tokens used since the bot was started OR since the first time the bot was used in the month if the bot is on for multiple months.
 
 ## Contributing
 Feel free to fork this repo and submit pull requests for different features, fixes, and changes.

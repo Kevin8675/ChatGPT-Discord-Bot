@@ -47,7 +47,9 @@ let state = {
 	isPaused: false,
 	personalities: [],
 	timer: null,
-	tokenCount: null
+	tokenCount: null,
+	startTime: new Date(),
+	totalTokenCount: 0
 };
 
 // Run function
@@ -174,6 +176,13 @@ client.on('messageCreate', async msg => {
 		}
 	}
 
+	// Check if it is a new month
+	let today = new Date();
+	if (state.startTime.getUTCMonth() !== today.getUTCMonth()) {
+		state.startTime = new Date();
+		state.totalTokenCount = 0;
+	}
+
 	// Add user message to request
 	p.request.push({"role": "user", "content": `${msg.content}`});
 	// Start typing indicator
@@ -205,6 +214,9 @@ async function chat(requestX, msg){
 		if (!isAdmin(msg)) {
 			state.tokenCount += completion.data.usage.completion_tokens;
 		}
+
+		// Increase total token count
+		state.totalTokenCount += completion.data.usage.total_tokens;
 
 		let responseContent;
 
