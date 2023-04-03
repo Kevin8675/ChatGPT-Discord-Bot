@@ -47,7 +47,9 @@ let state = {
 	isPaused: false,
 	personalities: [],
 	timer: null,
-	tokenCount: null
+	tokenCount: null,
+	startTime: new Date(),
+	totalTokenCount: 0
 };
 
 // Run function
@@ -163,15 +165,22 @@ client.on('messageCreate', async msg => {
 
 		timePassed = Math.abs(new Date() - state.timer);
 		// Set variables on first start or when time exceeds timer
-		if (timePassed >= parseInt(process.env.TOKEN_RESET_TIME, 10) || state.timer === null) {
+		if (timePassed >= parseInt(process.env?.TOKEN_RESET_TIME, 10) || state.timer === null) {
 			state.timer = new Date();
 			state.tokenCount = 0;
 		}
 		// Send message when token limit reached
-		if (timePassed < parseInt(process.env.TOKEN_RESET_TIME, 10) && state.tokenCount >= parseInt(process.env.TOKEN_NUM, 10)) {
+		if (timePassed < parseInt(process.env?.TOKEN_RESET_TIME, 10) && state.tokenCount >= parseInt(process.env?.TOKEN_NUM, 10)) {
 			sendCmdResp(msg, process.env.TOKEN_LIMIT_MSG.replace("<m>", Math.round((parseInt(process.env.TOKEN_RESET_TIME, 10) - timePassed) / parseInt(process.env.TOKEN_RESET_TIME, 10) * 10) / 10));
 			return;
 		}
+	}
+
+	// Check if it is a new month
+	let today = new Date();
+	if (state.startTime.getUTCMonth() !== today.getUTCMonth()) {
+		state.startTime = new Date();
+		state.totalTokenCount = 0;
 	}
 
 	// Add user message to request
@@ -205,6 +214,9 @@ async function chat(requestX, msg){
 		if (!isAdmin(msg)) {
 			state.tokenCount += completion.data.usage.completion_tokens;
 		}
+
+		// Increase total token count
+		state.totalTokenCount += completion.data.usage.total_tokens;
 
 		let responseContent;
 

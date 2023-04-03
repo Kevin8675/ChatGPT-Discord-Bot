@@ -6,12 +6,12 @@ require('dotenv').config({ path: '/.env'});
 module.exports = {
     data: new SlashCommandBuilder()
         // Command details
-        .setName('token-reset')
-        .setDescription('Reset the token count.')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
+        .setName('token-count')
+        .setDescription('Show amount of tokens used since bot was started.'),
     async execute(interaction, state) {
         // Commands to execute
-        state.tokenCount = 0;
-        await interaction.reply(process.env.TOKEN_RESET_MSG);
+        let message = process.env.TOKEN_COUNT_MSG.replace("<t>", state.totalTokenCount);
+        message = message.replace("<d>", state.startTime.toLocaleDateString());
+        await interaction.reply(message);
     },
 };

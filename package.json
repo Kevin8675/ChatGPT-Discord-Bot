@@ -1,6 +1,6 @@
 {
   "name": "chatgpt-discord-bot",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A simple ChatGPT Discord bot",
   "main": "index.js",
   "repository": {
@@ -18,5 +18,8 @@
     "dotenv": "^16.0.3",
     "openai": "^3.2.1"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index.js"
+  }
 }
