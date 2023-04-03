@@ -7,7 +7,8 @@ module.exports = {
     data: new SlashCommandBuilder()
         // Command details
         .setName('personalities')
-        .setDescription('List the name of all personalities and their prompts.'),
+        .setDescription('List the name of all personalities and their prompts.')
+        .setDMPermission(false),
     async execute(interaction, state) {
         // Commands to execute
         // Check admin/pause state

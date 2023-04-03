@@ -7,7 +7,8 @@ module.exports = {
     data: new SlashCommandBuilder()
         // Command details
         .setName('token-count')
-        .setDescription('Show amount of tokens used since bot was started.'),
+        .setDescription('Show amount of tokens used since bot was started.')
+        .setDMPermission(false),
     async execute(interaction, state) {
         // Commands to execute
         let message = process.env.TOKEN_COUNT_MSG.replace("<t>", state.totalTokenCount);

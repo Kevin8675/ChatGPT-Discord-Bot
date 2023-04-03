@@ -8,7 +8,8 @@ module.exports = {
         // Command details
         .setName('enable')
         .setDescription('Enable the bot.')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+        .setDMPermission(false),
     async execute(interaction, state) {
         // Commands to execute
         state.isPaused = false;

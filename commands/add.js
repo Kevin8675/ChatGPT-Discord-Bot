@@ -14,7 +14,8 @@ module.exports = {
         .addStringOption(option =>
             option.setName('prompt')
                 .setDescription('The prompt for the new personality.')
-                .setRequired(true)),
+                .setRequired(true))
+        .setDMPermission(false),
     async execute(interaction, state) {
         // Commands to execute
         // Check admin/pause state

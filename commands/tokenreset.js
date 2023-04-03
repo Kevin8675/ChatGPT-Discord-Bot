@@ -8,7 +8,8 @@ module.exports = {
         // Command details
         .setName('token-reset')
         .setDescription('Reset the token count.')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+        .setDMPermission(false),
     async execute(interaction, state) {
         // Commands to execute
         state.tokenCount = 0;
