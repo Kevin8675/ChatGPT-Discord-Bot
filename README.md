@@ -25,13 +25,15 @@ You can join the public Discord to try the bot or communicate with me or other u
 2. Create a [Discord Application Bot](https://discord.com/developers/applications/). You can follow [this](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot) tutorial. Make sure to enable the "Message Content Intent" under the "Priveralged Gateway Intents" section in the "Bot" tab. Copy the bot token somewhere for usage later.
 3. Invite the bot to your server. You can follow [this](https://discordjs.guide/preparations/adding-your-bot-to-servers.html) tutorial.
 4. Install [NodeJS](https://nodejs.org/) for your system. Refer to Google for installation based on OS.
-5. Download Source Code from releases or clone this repo for dev build.
-6. If you downloaded a release, extract the zip and open the extracted zip folder in a terminal. If you cloned repo, open the repo directory in a terminal.
+5. Download Source Code from releases or download [this](https://github.com/Kevin8675/ChatGPT-Discord-Bot/archive/refs/heads/develop.zip) zip for the **dev** version. **Note that while the dev version has the latest features, it has undergone little testing. Bugs should be expected here and there.** You can also clone the GitHub repository.
+6. If you downloaded a release or dev zip, extract the zip and open the extracted zip folder in a terminal. If you cloned repo, open the repo directory in a terminal.
 7. Run `npm ci` to install NPM dependencies.
 8. Copy `.env.example` to `.env` and add your bot token and insert your API key and token into `.env`. Add 1 or more personalities. Change other options to your liking.
 9. Run `node deploy-commands.js` to deploy the bot's slash commands to discord.
 10. Finally, run `npm start` or `node index.js` to start the bot.
 11. **OPTIONAL** Install [PM2](https://pm2.keymetrics.io/) if you want to keep your bot active. Run `pm2 start index.js --watch` to start it.
+### Updating
+If you downloaded a zip, download the latest zip (release or dev) and extract it to the bot directory. If you cloned the repo, open the repo directory and run `git pull`. Update `.env` if needed. Then restart the bot.
 
 ## Usage
 Once the bot is started, simply send a message containing the personality name you put in the `.env` file or reply to a message from the bot and the bot will respond!
