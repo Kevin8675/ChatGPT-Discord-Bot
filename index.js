@@ -144,6 +144,7 @@ client.on('messageCreate', async msg => {
 
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
+
 	// Check if message is a reply if no personality name
 	if (p == null && msg.reference?.messageId) {
 		let refMsg = await msg.fetchReference();
@@ -185,6 +186,15 @@ client.on('messageCreate', async msg => {
 
 	// Add user message to request
 	p.request.push({"role": "user", "content": `${msg.content}`});
+
+	// Truncate conversation if # of messages in conversation exceed MSG_LIMIT
+	if (p.request.length - 1 > parseInt(process.env.MSG_LIMIT, 10)) {
+		let delMsg = (p.request.length - 1) - parseInt(process.env.MSG_LIMIT, 10);
+		p.request.splice(1, delMsg);
+	}
+	
+	console.log(p.request);
+
 	// Start typing indicator
 	msg.channel.sendTyping();
 	// Run API request function
