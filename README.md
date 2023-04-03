@@ -9,7 +9,8 @@ You can join the public Discord to try the bot or communicate with me or other u
 * Enable/Disable/Reset commands for admins.
 * Memory: Bot will remember conversations until restarted or reset.
 * Message splitter for longer messages that exceed 2000 characters.
-* Token limiter: Ability to limit amount of tokens being used in a span of time.
+* Token limiter: Ability to limit amount of tokens being used in a span of time (configurable).
+* Conversation history truncator: Cuts down conversation history to save tokens (configurable).
 
 ## Dependencies
 * nodejs
