@@ -30,7 +30,7 @@ You can join the public Discord to try the bot or communicate with me or other u
 6. If you downloaded a release or dev zip, extract the zip and open the extracted zip folder in a terminal. If you cloned repo, open the repo directory in a terminal.
 7. Run `npm ci` to install NPM dependencies.
 8. Copy `.env.example` to `.env` and add your bot token and insert your API key and token into `.env`. Add 1 or more personalities. Change other options to your liking.
-9. Run `node deploy-commands.js` to deploy the bot's slash commands to discord.
+9. Run `node deploy-commands.js` to deploy the bot's slash commands to discord. See [below](#deploying-commands) for additional details.
 10. Finally, run `npm start` or `node index.js` to start the bot.
 11. **OPTIONAL** Install [PM2](https://pm2.keymetrics.io/) if you want to keep your bot active. Run `pm2 start index.js --watch` to start it.
 ### Updating
@@ -48,6 +48,40 @@ Once the bot is started, simply send a message containing the personality name y
   - Usage: `/add-personality <name> <prompt>`
 * `/token-reset`: Resets the current token count.
 * `/token-count`: Shows the number of total tokens used since the bot was started OR since the first time the bot was used in the month if the bot is on for multiple months.
+
+### Deploying Commands
+<details>
+  <summary>Click to expand</summary>
+To use the deploy/delete script, run `node ./deploy-commands.js` followed by one or more arguments. The available arguments are:
+
+*   `[env]` (optional): the name of the `.env` file to use. If not specified, the script will use `.env` by default.
+*   `-d [command]` (optional): the name of the command to delete. If specified, the script will delete the command with the given id.
+*   `-x [file]` (optional): the name of a command file(s) to ignore. If specified, the script will not deploy the command(s) with the given file name(s).
+
+To deploy all commands using the default `.env` file, run:
+
+```bash
+node ./deploy-commands.js
+```
+
+To deploy all commands using a custom `.env` file named `bot2.env`, run:
+
+```bash
+node ./deploy-commands.js bot2.env
+```
+
+To delete a command, find its command id, then run:
+
+```bash
+node ./deploy-commands.js bot2.env -d COMMAND_ID
+```
+
+To deploy all commands except the commands in `ignore.js` and `test.js`, run:
+
+```bash
+node ./deploy-commands.js bot2.env -x ignore.js,test.js
+```
+</details>
 
 ## Contributing
 Feel free to fork this repo and submit pull requests for different features, fixes, and changes.
