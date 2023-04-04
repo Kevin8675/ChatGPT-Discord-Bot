@@ -99,6 +99,10 @@ function sendCmdResp(msg, cmdResp) {
 // Set admin user IDs
 adminId = process.env.ADMIN_ID.split(',');
 
+// Set unrestricted role(s)
+unrestrictedRoles = process.env.UNRESTRICTED_ROLE_IDS.split(',');
+let isUnrestricted = null;
+
 // Check message author id function
 function isAdmin(msg) {
 	if (msg.member.permissions.has(PermissionFlagsBits.Administrator) || msg.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
@@ -164,16 +168,24 @@ client.on('messageCreate', async msg => {
 			return;
 		}
 
-		timePassed = Math.abs(new Date() - state.timer);
-		// Set variables on first start or when time exceeds timer
-		if (timePassed >= parseInt(process.env?.TOKEN_RESET_TIME, 10) || state.timer === null) {
-			state.timer = new Date();
-			state.tokenCount = 0;
+		// Check is user has an unrestricted rols
+		for (let i = 0; i < unrestrictedRoles.length; i++) {
+			isUnrestricted = msg.member.roles.cache.has(unrestrictedRoles[i]);
+			if (isUnrestricted === true) break;
 		}
-		// Send message when token limit reached
-		if (timePassed < parseInt(process.env?.TOKEN_RESET_TIME, 10) && state.tokenCount >= parseInt(process.env?.TOKEN_NUM, 10)) {
+
+		if (!isUnrestricted) {
+			timePassed = Math.abs(new Date() - state.timer);
+			// Set variables on first start or when time exceeds timer
+			if (timePassed >= parseInt(process.env?.TOKEN_RESET_TIME, 10) || state.timer === null) {
+				state.timer = new Date();
+				state.tokenCount = 0;
+			}
+			// Send message when token limit reached
+			if (timePassed < parseInt(process.env?.TOKEN_RESET_TIME, 10) && state.tokenCount >= parseInt(process.env?.TOKEN_NUM, 10)) {
 				sendCmdResp(msg, process.env.TOKEN_LIMIT_MSG.replace("<m>", Math.round((parseInt(process.env.TOKEN_RESET_TIME, 10) - timePassed) / 6000) / 10));
-			return;
+				return;
+			}
 		}
 	}
 
@@ -219,7 +231,7 @@ async function chat(requestX, msg){
 		});
 
 		// Increase token counter if not admin
-		if (!isAdmin(msg)) {
+		if (!isAdmin(msg) && !isUnrestricted) {
 			state.tokenCount += completion.data.usage.completion_tokens;
 		}
 
