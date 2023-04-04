@@ -172,7 +172,7 @@ client.on('messageCreate', async msg => {
 		}
 		// Send message when token limit reached
 		if (timePassed < parseInt(process.env?.TOKEN_RESET_TIME, 10) && state.tokenCount >= parseInt(process.env?.TOKEN_NUM, 10)) {
-			sendCmdResp(msg, process.env.TOKEN_LIMIT_MSG.replace("<m>", Math.round((parseInt(process.env.TOKEN_RESET_TIME, 10) - timePassed) / parseInt(process.env.TOKEN_RESET_TIME, 10) * 10) / 10));
+				sendCmdResp(msg, process.env.TOKEN_LIMIT_MSG.replace("<m>", Math.round((parseInt(process.env.TOKEN_RESET_TIME, 10) - timePassed) / 6000) / 10));
 			return;
 		}
 	}
