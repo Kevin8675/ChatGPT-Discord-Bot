@@ -108,7 +108,7 @@ function sendCmdResp(msg, cmdResp) {
 adminId = process.env.ADMIN_ID.split(',');
 
 // Set unrestricted role(s)
-unrestrictedRoles = process.env.UNRESTRICTED_ROLE_IDS.split(',');
+unrestrictedRoles = process.env?.UNRESTRICTED_ROLE_IDS?.split(',');
 let isUnrestricted = null;
 
 // Check message author id function
@@ -177,7 +177,7 @@ client.on('messageCreate', async msg => {
 		}
 
 		// Check is user has an unrestricted rols
-		for (let i = 0; i < unrestrictedRoles.length; i++) {
+		for (let i = 0; i < unrestrictedRoles?.length; i++) {
 			isUnrestricted = msg.member.roles.cache.has(unrestrictedRoles[i]);
 			if (isUnrestricted === true) break;
 		}
