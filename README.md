@@ -9,6 +9,7 @@ You can join the public Discord to try the bot or communicate with me or other u
 * Enable/Disable/Reset commands for admins.
 * Memory: Bot will remember conversations until restarted or reset.
 * Message splitter for longer messages that exceed 2000 characters.
+* Easily change between configuration files.
 * Token limiter: Ability to limit amount of tokens being used in a span of time (configurable).
 * Conversation history truncator: Cuts down conversation history to save tokens (configurable).
 
@@ -30,14 +31,16 @@ You can join the public Discord to try the bot or communicate with me or other u
 6. If you downloaded a release or dev zip, extract the zip and open the extracted zip folder in a terminal. If you cloned repo, open the repo directory in a terminal.
 7. Run `npm ci` to install NPM dependencies.
 8. Copy `.env.example` to `.env` and add your bot token and insert your API key and token into `.env`. Add 1 or more personalities. Change other options to your liking.
+  - **OPTIONAL** You can copy `.env.example` to other files that end in `.env` if you want to have multiple different configuration files. See step 10 for how to use custom named `*.env` files.
 9. Run `node deploy-commands.js` to deploy the bot's slash commands to discord. See [below](#deploying-commands) for additional details.
 10. Finally, run `npm start` or `node index.js` to start the bot.
+  - You can use `npm start NAME.env` or `node index.js NAME.env` to run using a custom named `*.env` file.
 11. **OPTIONAL** Install [PM2](https://pm2.keymetrics.io/) if you want to keep your bot active. Run `pm2 start index.js --watch` to start it.
 ### Updating
 If you downloaded a zip, download the latest zip (release or dev) and extract it to the bot directory. If you cloned the repo, open the repo directory and run `git pull`. Update `.env` if needed. Then restart the bot.
 
 ## Usage
-Once the bot is started, simply send a message containing the personality name you put in the `.env` file or reply to a message from the bot and the bot will respond!
+Once the bot is started, simply send a message containing the personality name you put in the `*.env` file or reply to a message from the bot and the bot will respond!
 ### Commands
 * `/enable`: Enables the bot.
 * `/disable`: Disables the bot.
@@ -52,7 +55,7 @@ Once the bot is started, simply send a message containing the personality name y
 ### Deploying Commands
 <details>
   <summary>Click to expand</summary>
-To use the deploy/delete script, run `node ./deploy-commands.js` followed by one or more arguments. The available arguments are:
+To use the deploy/delete script, run `node deploy-commands.js` followed by one or more arguments. The available arguments are:
 
 *   `[env]` (optional): the name of the `.env` file to use. If not specified, the script will use `.env` by default.
 *   `-d [command]` (optional): the name of the command to delete. If specified, the script will delete the command with the given id.
@@ -61,25 +64,25 @@ To use the deploy/delete script, run `node ./deploy-commands.js` followed by one
 To deploy all commands using the default `.env` file, run:
 
 ```bash
-node ./deploy-commands.js
+node deploy-commands.js
 ```
 
-To deploy all commands using a custom `.env` file named `bot2.env`, run:
+To deploy all commands using a custom named `*.env` file, use:
 
 ```bash
-node ./deploy-commands.js bot2.env
+node deploy-commands.js NAME.env
 ```
 
 To delete a command, find its command id, then run:
 
 ```bash
-node ./deploy-commands.js bot2.env -d COMMAND_ID
+node deploy-commands.js -d COMMAND_ID
 ```
 
 To deploy all commands except the commands in `ignore.js` and `test.js`, run:
 
 ```bash
-node ./deploy-commands.js bot2.env -x ignore.js,test.js
+node deploy-commands.js -x ignore.js,test.js
 ```
 </details>
 
