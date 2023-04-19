@@ -3,16 +3,24 @@ const fs = require('node:fs');
 const path = require('node:path');
 // Require the necessary discord.js classes
 const { Client, Collection, Events, GatewayIntentBits, PermissionFlagsBits } = require('discord.js');
-// Initialize .env config file
-require('dotenv').config();
+// Initialize dotenv
+const dotenv = require('dotenv');
 // Require openai
 const { Configuration, OpenAIApi } = require("openai");
 // Require global functions
 const { initPersonalities } = require(path.join(__dirname, "common.js"));
 
+// Initialize dotenv config file
+const args = process.argv.slice(2);
+let envFile = '.env';
+if (args.length === 1) {
+	envFile = `${args[0]}`;
+}
+dotenv.config({ path: envFile });
+
 // Set OpenAI API key
 const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+	apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Setup OpenAI
