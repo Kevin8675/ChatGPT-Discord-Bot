@@ -31,10 +31,10 @@ You can join the public Discord to try the bot or communicate with me or other u
 6. If you downloaded a release or dev zip, extract the zip and open the extracted zip folder in a terminal. If you cloned repo, open the repo directory in a terminal.
 7. Run `npm ci` to install NPM dependencies.
 8. Copy `.env.example` to `.env` and add your bot token and insert your API key and token into `.env`. Add 1 or more personalities. Change other options to your liking.
-  - **OPTIONAL** You can copy `.env.example` to other files that end in `.env` if you want to have multiple different configuration files. See step 10 for how to use custom named `*.env` files.
+    * **OPTIONAL** You can copy `.env.example` to other files that end in `.env` if you want to have multiple different configuration files. See step 10 for how to use custom named `*.env` files.
 9. Run `node deploy-commands.js` to deploy the bot's slash commands to discord. See [below](#deploying-commands) for additional details.
 10. Finally, run `npm start` or `node index.js` to start the bot.
-  - You can use `npm start NAME.env` or `node index.js NAME.env` to run using a custom named `*.env` file.
+    * You can use `npm start NAME.env` or `node index.js NAME.env` to run using a custom named `*.env` file.
 11. **OPTIONAL** Install [PM2](https://pm2.keymetrics.io/) if you want to keep your bot active. Run `pm2 start index.js --watch` to start it.
 ### Updating
 If you downloaded a zip, download the latest zip (release or dev) and extract it to the bot directory. If you cloned the repo, open the repo directory and run `git pull`. Update `.env` if needed. Then restart the bot.
@@ -45,10 +45,10 @@ Once the bot is started, simply send a message containing the personality name y
 * `/enable`: Enables the bot.
 * `/disable`: Disables the bot.
 * `/reset`: Resets the memory of all personalities or a single personality. If personality is ephemeral, sets its prompt to `undefined`.
-  - Usage: `/reset <personality_name>`
+  * Usage: `/reset <personality_name>`
 * `/personalities`: Lists available personalities and their prompts.
 * `/add-personality`: Adds an ephemeral personality to the bot, it will be lost when the bot restarts. Can also update `undefined` prompts.
-  - Usage: `/add-personality <name> <prompt>`
+  * Usage: `/add-personality <name> <prompt>`
 * `/token-reset`: Resets the current token count.
 * `/token-count`: Shows the number of total tokens used since the bot was started OR since the first time the bot was used in the month if the bot is on for multiple months.
 
