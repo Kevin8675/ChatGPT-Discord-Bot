@@ -154,6 +154,9 @@ client.on('messageCreate', async msg => {
 		if (msg.author.bot) return;
 	}
 
+	// Don't reply to system messages
+	if (msg.system) return;
+
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
 
