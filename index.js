@@ -171,9 +171,11 @@ client.on('messageCreate', async msg => {
 
 	// Check if message is from joined thread if no personality name
 	if (p == null && msg.channel.isThread() && msg.channel.joined) {
-		let starterMsg = await msg.channel.fetchStarterMessage();
-		// Set personality to starter message personality
-		p = state.personalities.find(pers => pers.request.some(element => (element.content === starterMsg.content)));
+		// Fetch last message from bot
+		let messages = await msg.channel.messages.fetch();
+		let lastMsg = messages.find(msg => msg.author.id === client.user.id);
+		// Set personality to last message from bot personality
+		p = state.personalities.find(pers => pers.request.some(element => (element.content === lastMsg?.content)));
 	}
 
 	// Run get personality from message function if not reply to bot
