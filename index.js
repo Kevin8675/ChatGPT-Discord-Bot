@@ -174,6 +174,10 @@ client.on('messageCreate', async msg => {
 		// Fetch last message from bot
 		let messages = await msg.channel.messages.fetch();
 		let lastMsg = messages.find(msg => msg.author.id === client.user.id);
+		// If no message found, fetch starter message
+		if (lastMsg == null) {
+			lastMsg = await msg.channel.fetchStarterMessage();
+		}
 		// Set personality to last message from bot personality
 		p = state.personalities.find(pers => pers.request.some(element => (element.content === lastMsg?.content)));
 	}
