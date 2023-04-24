@@ -157,8 +157,17 @@ client.on('messageCreate', async msg => {
 	// Don't reply to system messages
 	if (msg.system) return;
 
-	// Run get personality from message function
-	p = getPersonality(msg.content.toUpperCase());
+	p = null;
+
+	// Check if message is a reply
+	if (msg.reference?.messageId) {
+		let refMsg = await msg.fetchReference();
+		// Check if the reply is to the bot
+		if (refMsg.author.id === client.user.id) {
+			// Check the personality that the message being replied to is from
+			p = state.personalities.find(pers => pers.request.some(element => (element.content === refMsg.content)));
+		}
+	}
 
 	// Check if message is from joined thread if no personality name
 	if (p == null && msg.channel.isThread() && msg.channel.joined) {
@@ -167,15 +176,12 @@ client.on('messageCreate', async msg => {
 		p = state.personalities.find(pers => pers.request.some(element => (element.content === starterMsg.content)));
 	}
 
-	// Check if message is a reply if no personality name
-	if (p == null && msg.reference?.messageId) {
-		let refMsg = await msg.fetchReference();
-		// Check if the reply is to the bot
-		if (refMsg.author.id === client.user.id) {
-			// Check the personality that the message being replied to is from
-			p = state.personalities.find(pers => pers.request.some(element => (element.content === refMsg.content)));
-		}
+	// Run get personality from message function if not reply to bot
+	if (p == null) {
+		p = getPersonality(msg.content.toUpperCase());
 	}
+	
+	// Don't reply if no personality found
 	if (p == null) return;
 
 	// Check if not admin
