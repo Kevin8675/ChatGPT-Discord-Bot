@@ -160,6 +160,13 @@ client.on('messageCreate', async msg => {
 	// Run get personality from message function
 	p = getPersonality(msg.content.toUpperCase());
 
+	// Check if message is from joined thread if no personality name
+	if (p == null && msg.channel.isThread() && msg.channel.joined) {
+		let starterMsg = await msg.channel.fetchStarterMessage();
+		// Set personality to starter message personality
+		p = state.personalities.find(pers => pers.request.some(element => (element.content === starterMsg.content)));
+	}
+
 	// Check if message is a reply if no personality name
 	if (p == null && msg.reference?.messageId) {
 		let refMsg = await msg.fetchReference();
