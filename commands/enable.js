@@ -1,7 +1,5 @@
 // Requre the necessary discord.js classes
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-// Initialize .env file
-require('dotenv').config({ path: '/.env'});
 
 module.exports = {
     data: new SlashCommandBuilder()

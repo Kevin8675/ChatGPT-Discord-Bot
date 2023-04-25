@@ -2,8 +2,6 @@
 const path = require('node:path');
 // Requre the necessary discord.js classes
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-// Initialize .env file
-require('dotenv').config({ path: '/.env'});
 // Require global functions
 const { initPersonalities } = require(path.join(__dirname, "../common.js"));
 
