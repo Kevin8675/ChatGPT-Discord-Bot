@@ -54,10 +54,11 @@ client.on('ready', () => {
 let state = {
 	isPaused: false,
 	personalities: [],
-	timer: null,
+	tokenTimer: null,
 	tokenCount: null,
 	startTime: new Date(),
-	totalTokenCount: 0
+	totalTokenCount: 0,
+	slowModeTimer: {}
 };
 
 // Run function
@@ -214,15 +215,28 @@ client.on('messageCreate', async msg => {
 		}
 
 		if (!isUnrestricted) {
-			timePassed = Math.abs(new Date() - state.timer);
-			// Set variables on first start or when time exceeds timer
-			if (timePassed >= parseInt(process.env?.TOKEN_RESET_TIME, 10) || state.timer === null) {
-				state.timer = new Date();
+			timePassed = Math.abs(new Date() - state.tokenTimer);
+			// Set variables on first start or when time exceeds token timer
+			if (timePassed >= parseInt(process.env?.TOKEN_RESET_TIME, 10) || state.tokenTimer === null) {
+				state.tokenTimer = new Date();
 				state.tokenCount = 0;
 			}
 			// Send message when token limit reached
 			if (timePassed < parseInt(process.env?.TOKEN_RESET_TIME, 10) && state.tokenCount >= parseInt(process.env?.TOKEN_NUM, 10)) {
 				sendCmdResp(msg, process.env.TOKEN_LIMIT_MSG.replace("<m>", Math.round((parseInt(process.env.TOKEN_RESET_TIME, 10) - timePassed) / 6000) / 10));
+				return;
+			}
+
+			smTimePassed = Math.abs(new Date() - state.slowModeTimer?.[msg.author.id]);
+			// Set variables on first start or when time exceeds slow mode timer
+			if (smTimePassed >= parseInt(process.env?.SLOW_MODE_TIME, 10) || state.slowModeTimer?.[msg.author.id] == undefined) {
+				state.slowModeTimer[msg.author.id] = new Date();
+			}
+			// Send message when slow mode reached
+			if (smTimePassed < parseInt(process.env?.SLOW_MODE_TIME, 10)) {
+				smMsg = process.env.SLOW_MODE_MSG.replace("<m>", Math.round((parseInt(process.env.SLOW_MODE_TIME, 10) - smTimePassed) / 6000) / 10);
+				smMsg = smMsg.replace("<s>", Math.round((parseInt(process.env.SLOW_MODE_TIME, 10) - smTimePassed) / 1000));
+				sendCmdResp(msg, smMsg);
 				return;
 			}
 		}
