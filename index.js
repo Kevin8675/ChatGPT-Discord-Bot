@@ -89,7 +89,7 @@ function splitMessage(resp, charLim) {
 		if (i + 1 >= responseNum) {
 			chunkSize = charLim;
 		} else {
-					chunkSize = resp.substr(c, charLim).lastIndexOf(" ");
+			chunkSize = resp.substr(c, charLim).lastIndexOf(" ");
 		}
 		responses[i] = resp.substr(c, chunkSize);
 	}
@@ -158,11 +158,7 @@ client.on('messageCreate', async msg => {
 	}
 
 	// Don't do anything when message is from self or bot depending on config
-	if (process.env.BOT_REPLIES === 'true') {
-		if (msg.author.id === client.user.id) return;
-	} else {
-		if (msg.author.bot) return;
-	}
+	if ((process.env.BOT_REPLIES === 'true' && msg.author.id === client.user.id) || (process.env.BOT_REPLIES !== 'true' && msg.author.bot)) return;
 
 	// Don't reply to system messages
 	if (msg.system) return;
@@ -215,27 +211,29 @@ client.on('messageCreate', async msg => {
 		}
 
 		if (!isUnrestricted) {
+			const tokenResetTime = parseInt(process.env?.TOKEN_RESET_TIME, 10);
 			timePassed = Math.abs(new Date() - state.tokenTimer);
 			// Set variables on first start or when time exceeds token timer
-			if (timePassed >= parseInt(process.env?.TOKEN_RESET_TIME, 10) || state.tokenTimer === null) {
+			if ((tokenResetTime != "" || tokenResetTime != undefined) && (timePassed >= tokenResetTime || state.tokenTimer === null)) {
 				state.tokenTimer = new Date();
 				state.tokenCount = 0;
 			}
 			// Send message when token limit reached
-			if (timePassed < parseInt(process.env?.TOKEN_RESET_TIME, 10) && state.tokenCount >= parseInt(process.env?.TOKEN_NUM, 10)) {
-				sendCmdResp(msg, process.env.TOKEN_LIMIT_MSG.replace("<m>", Math.round((parseInt(process.env.TOKEN_RESET_TIME, 10) - timePassed) / 6000) / 10));
+			if ((tokenResetTime != "" || tokenResetTime != undefined) && timePassed < tokenResetTime && state.tokenCount >= parseInt(process.env?.TOKEN_NUM, 10)) {
+				sendCmdResp(msg, process.env.TOKEN_LIMIT_MSG.replace("<m>", Math.round((tokenResetTime - timePassed) / 6000) / 10));
 				return;
 			}
 
+			const slowModeTime = parseInt(process.env?.SLOW_MODE_TIME, 10);
 			smTimePassed = Math.abs(new Date() - state.slowModeTimer?.[msg.author.id]);
 			// Set variables on first start or when time exceeds slow mode timer
-			if (smTimePassed >= parseInt(process.env?.SLOW_MODE_TIME, 10) || state.slowModeTimer?.[msg.author.id] == undefined) {
+			if ((slowModeTime != "" || slowModeTime != undefined) && (smTimePassed >= slowModeTime || state.slowModeTimer?.[msg.author.id] == undefined)) {
 				state.slowModeTimer[msg.author.id] = new Date();
 			}
 			// Send message when slow mode reached
-			if (smTimePassed < parseInt(process.env?.SLOW_MODE_TIME, 10)) {
-				smMsg = process.env.SLOW_MODE_MSG.replace("<m>", Math.round((parseInt(process.env.SLOW_MODE_TIME, 10) - smTimePassed) / 6000) / 10);
-				smMsg = smMsg.replace("<s>", Math.round((parseInt(process.env.SLOW_MODE_TIME, 10) - smTimePassed) / 1000));
+			if ((slowModeTime != "" || slowModeTime != undefined) && smTimePassed < slowModeTime) {
+				smMsg = process.env.SLOW_MODE_MSG.replace("<m>", Math.round((slowModeTime - smTimePassed) / 6000) / 10);
+				smMsg = smMsg.replace("<s>", Math.round((slowModeTime - smTimePassed) / 1000));
 				sendCmdResp(msg, smMsg);
 				return;
 			}
@@ -295,17 +293,17 @@ async function chat(requestX, msg){
 
 		// Check capitlization mode
 		switch (process.env.CASE_MODE) {
-		case "":
-			responseContent = completion.data.choices[0].message.content;
-			break;
-		case "upper":
-			responseContent = completion.data.choices[0].message.content.toUpperCase();
-			break;
-		case "lower":
-			responseContent = completion.data.choices[0].message.content.toLowerCase();
-			break;
-		default:
-			console.log('[WARNING] Invalid CASE_MODE value. Please change and restart bot.');
+			case "":
+				responseContent = completion.data.choices[0].message.content;
+				break;
+			case "upper":
+				responseContent = completion.data.choices[0].message.content.toUpperCase();
+				break;
+			case "lower":
+				responseContent = completion.data.choices[0].message.content.toLowerCase();
+				break;
+			default:
+				console.log('[WARNING] Invalid CASE_MODE value. Please change and restart bot.');
 		}
 
 		// Add assistant message to next request
