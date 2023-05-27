@@ -58,7 +58,8 @@ let state = {
 	tokenCount: null,
 	startTime: new Date(),
 	totalTokenCount: 0,
-	slowModeTimer: {}
+	slowModeTimer: {},
+	channelIds: process.env?.CHANNELS?.split(',')
 };
 
 // Run function
@@ -105,9 +106,6 @@ function sendCmdResp(msg, cmdResp) {
 	}
 }
 
-// Set channels
-channelIds = process.env?.CHANNELS?.split(',');
-
 // Set admin user IDs
 adminId = process.env.ADMIN_ID.split(',');
 
@@ -147,13 +145,12 @@ client.on(Events.InteractionCreate, async interaction => {
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 		}
 	}
-
 })
 
 client.on('messageCreate', async msg => {
 	// Don't do anything when not in bot channel
 	const channelCond = [msg.channelId, msg.channel.name, msg.channel?.parentId, msg.channel?.parent?.name];
-	if (channelIds != "" && typeof channelIds !== 'undefined' && !channelCond.some(cond => channelIds.includes(cond))) {
+	if (state.channelIds != "" && typeof state.channelIds !== 'undefined' && !channelCond.some(cond => state.channelIds.includes(cond))) {
 		return;
 	}
 
