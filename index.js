@@ -59,7 +59,8 @@ let state = {
 	startTime: new Date(),
 	totalTokenCount: 0,
 	slowModeTimer: {},
-	channelIds: process.env?.CHANNELS?.split(',')
+	channelIds: process.env?.CHANNELS?.split(','),
+	envFile: envFile
 };
 
 // Run function
