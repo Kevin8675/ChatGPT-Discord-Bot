@@ -8,7 +8,16 @@ function initPersonalities(personalities, env) {
 	envKeys.forEach(element => {
 		if (element.startsWith('personality.')) {
 			let name = element.slice(12);
-			personalities.push({ "name": name, "request" : [{"role": "system", "content": `${env[element]}`}]})
+			// Use description if provided
+			if (typeof process.env["description." + name] !== 'undefined') {
+                // Truncate the description to 1024 characters if it's longer than that
+                let truncatedPrompt = process.env["description." + name].substring(0, 1024);
+				personalities.push({ "name": name, "request" : [{"role": "system", "content": `${env[element]}`}], "description": truncatedPrompt});
+            } else {
+                // Truncate the prompt to 1024 characters if it's longer than that
+                let truncatedPrompt = env[element].substring(0, 1024);
+				personalities.push({ "name": name, "request" : [{"role": "system", "content": `${env[element]}`}], "description": truncatedPrompt});
+			}
 		}
 	});
 }

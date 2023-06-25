@@ -33,8 +33,19 @@ module.exports = {
             for (let i = 0; i < state.personalities.length; i++) {
 				let thisPersonality = state.personalities[i];
 				if (interaction.options.getString('personality').toUpperCase().startsWith(thisPersonality.name.toUpperCase())) {
-					state.personalities[i] = { "name": thisPersonality.name, "request" : [{"role": "system", "content": `${process.env["personality." + thisPersonality.name]}`}]};
-					await interaction.reply(process.env.DYNAMIC_RESET_MSG.replace('<p>', thisPersonality.name));
+                    let description = 'undefined';
+                    if (typeof process.env["personality." + thisPersonality.name] !== 'undefined') {
+                        // Truncate the prompt to 1024 characters if it's longer than that
+                        description = process.env["personality." + thisPersonality.name].substring(0, 1024);
+                    }
+                    if (typeof process.env["description." + thisPersonality.name] !== 'undefined') {
+                        // Truncate the description to 1024 characters if it's longer than that
+                        description = process.env["description." + thisPersonality.name].substring(0, 1024);
+                    }
+                    // Update the personality
+                    state.personalities[i] = { "name": thisPersonality.name, "request" : [{"role": "system", "content": `${process.env["personality." + thisPersonality.name]}`}], description: description};
+					
+                    await interaction.reply(process.env.DYNAMIC_RESET_MSG.replace('<p>', thisPersonality.name));
 					return;
 				}
 			}

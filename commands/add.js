@@ -13,6 +13,9 @@ module.exports = {
             option.setName('prompt')
                 .setDescription('The prompt for the new personality.')
                 .setRequired(true))
+        .addStringOption(option =>
+            option.setName('description')
+                .setDescription('Description of the personality.'))
         .setDMPermission(false),
     async execute(interaction, state) {
         // Commands to execute
@@ -23,17 +26,21 @@ module.exports = {
         }
         const name = interaction.options.getString('name');
         const prompt = interaction.options.getString('prompt');
+        let description = interaction.options.getString('description');
+
+        // If no description provided, use prompt
+        if (description == null) description = prompt.substring(0, 1024);
 
         // Check if personality already exists
         const existingPersonality = state.personalities.find(p => p.name.toUpperCase() === name.toUpperCase());
         if (existingPersonality) {
             // If the existing prompt is undefined and a new prompt is provided, update it
-            if (typeof existingPersonality.prompt === 'undefined' && prompt) {
-                existingPersonality.prompt = prompt;
+            if (existingPersonality.description == 'undefined' && prompt) {
                 existingPersonality.request = [{
                     "role": "system",
                     "content": `${prompt}`
                 }];
+                existingPersonality.description = description;
                 await interaction.reply(process.env.UPDATE_PERSONALITY_MSG.replace("<n>", name));
             } else {
                 await interaction.reply(process.env.UPDATE_PERS_ERROR_MSG);
@@ -47,7 +54,8 @@ module.exports = {
             request: [{
                 "role": "system",
                 "content": `${prompt}`
-            }]
+            }],
+            description: description
         });
 
         await interaction.reply(process.env.ADDED_PERSONALITY_MSG.replace("<n>", name));
