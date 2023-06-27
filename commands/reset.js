@@ -33,6 +33,7 @@ module.exports = {
             for (let i = 0; i < state.personalities.length; i++) {
 				let thisPersonality = state.personalities[i];
 				if (interaction.options.getString('personality').toUpperCase().startsWith(thisPersonality.name.toUpperCase())) {
+                    // Get personality description
                     let description = 'undefined';
                     if (typeof process.env["personality." + thisPersonality.name] !== 'undefined') {
                         // Truncate the prompt to 1024 characters if it's longer than that
@@ -42,8 +43,13 @@ module.exports = {
                         // Truncate the description to 1024 characters if it's longer than that
                         description = process.env["description." + thisPersonality.name].substring(0, 1024);
                     }
+                    // Determine capitalization mode
+                    let caseMode = process.env["caps." + thisPersonality.name];
+                    if (caseMode == null) {
+                        caseMode = "";
+                    }
                     // Update the personality
-                    state.personalities[i] = { "name": thisPersonality.name, "request" : [{"role": "system", "content": `${process.env["personality." + thisPersonality.name]}`}], description: description};
+                    state.personalities[i] = { "name": thisPersonality.name, "request" : [{"role": "system", "content": `${process.env["personality." + thisPersonality.name]}`}], "description": description, "caseMode": caseMode};
 					
                     await interaction.reply(process.env.DYNAMIC_RESET_MSG.replace('<p>', thisPersonality.name));
 					return;

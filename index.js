@@ -257,7 +257,7 @@ client.on('messageCreate', async msg => {
 	// Start typing indicator
 	msg.channel.sendTyping();
 	// Run API request function
-	const response = await chat(p.request, msg);
+	const response = await chat(p, msg);
 	// Split response if it exceeds the Discord 2000 character limit
 	const responseChunks = splitMessage(response, 2000)
 	// Send the split API response
@@ -271,12 +271,12 @@ client.on('messageCreate', async msg => {
 })
 
 // API request function
-async function chat(requestX, msg){
+async function chat(p, msg){
 	try {
 		// Make API request
 		const completion = await openai.createChatCompletion({
 		model: "gpt-3.5-turbo",
-		messages: requestX
+		messages: p.request
 		});
 
 		// Increase token counter if not admin
@@ -290,7 +290,7 @@ async function chat(requestX, msg){
 		let responseContent;
 
 		// Check capitlization mode
-		switch (process.env.CASE_MODE) {
+		switch (p.caseMode) {
 			case "":
 				responseContent = completion.data.choices[0].message.content;
 				break;
@@ -305,7 +305,7 @@ async function chat(requestX, msg){
 		}
 
 		// Add assistant message to next request
-		requestX.push({"role": "assistant", "content": `${responseContent}`});
+		p.request.push({"role": "assistant", "content": `${responseContent}`});
 		
 		// Return response
 		return responseContent;
